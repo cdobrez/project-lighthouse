@@ -86,16 +86,22 @@ export function listCooks(neighborhood?: string): (Cook & { mealCount: number })
   const db = getDb();
   const conds = [eq(schema.cooks.active, true)];
   if (neighborhood) conds.push(eq(schema.cooks.neighborhood, neighborhood));
-  const rows = db
-    .select({
-      cook: schema.cooks,
-      mealCount: sql<number>`(select count(*) from meals m where m.cook_id = ${schema.cooks.id} and m.status = 'active')`,
-    })
+  const counts = new Map(
+    db
+      .select({ cookId: schema.meals.cookId, n: sql<number>`count(*)` })
+      .from(schema.meals)
+      .where(eq(schema.meals.status, "active"))
+      .groupBy(schema.meals.cookId)
+      .all()
+      .map((r) => [r.cookId, Number(r.n)])
+  );
+  return db
+    .select()
     .from(schema.cooks)
     .where(and(...conds))
     .orderBy(desc(schema.cooks.ratingAvg), desc(schema.cooks.ratingCount))
-    .all();
-  return rows.map((r) => ({ ...r.cook, mealCount: r.mealCount }));
+    .all()
+    .map((c) => ({ ...c, mealCount: counts.get(c.id) ?? 0 }));
 }
 
 export function getCookBySlug(slug: string): (Cook & { user: User; meals: Meal[] }) | null {
@@ -280,4 +286,18 @@ export function siteStats() {
   const served = db.select({ n: sql<number>`coalesce(sum(meals_served),0)` }).from(schema.cooks).get()?.n ?? 0;
   const reviews = db.select({ n: sql<number>`count(*)` }).from(schema.reviews).get()?.n ?? 0;
   return { cooks, meals, served, reviews };
+}
+
+export function getIssueForOrder(orderId: string) {
+  return getDb().select().from(schema.issues).where(eq(schema.issues.orderId, orderId)).get() ?? null;
+}
+
+export function listIssuesForCook(cookId: string) {
+  return getDb()
+    .select({ issue: schema.issues, customer: schema.users.name })
+    .from(schema.issues)
+    .innerJoin(schema.users, eq(schema.issues.userId, schema.users.id))
+    .where(and(eq(schema.issues.cookId, cookId), eq(schema.issues.status, "open")))
+    .orderBy(desc(schema.issues.createdAt))
+    .all();
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireCook } from "@/lib/auth";
-import { listOrdersForCook } from "@/lib/queries";
+import { listOrdersForCook, listIssuesForCook } from "@/lib/queries";
 import { Avatar } from "@/components/avatar";
 import { OrderActions } from "@/components/cook/order-actions";
 import { money, timeAgo, FULFILLMENT_LABELS } from "@/lib/format";
@@ -14,6 +14,7 @@ export default async function CookOrdersPage(props: PageProps<"/cook">) {
   const sp = await props.searchParams;
   const cook = await requireCook();
   const orders = listOrdersForCook(cook.id);
+  const issues = listIssuesForCook(cook.id);
   const open = orders.filter((o) => !isFinal(o.fulfillment, o.status));
   const done = orders.filter((o) => isFinal(o.fulfillment, o.status));
   const earned = done.filter((o) => o.status !== "cancelled").reduce((a, o) => a + Math.round(o.subtotalCents * COOK_SHARE) + o.tipCents, 0);
@@ -39,6 +40,20 @@ export default async function CookOrdersPage(props: PageProps<"/cook">) {
         <Stat label="Rating" value={cook.ratingCount ? `${cook.ratingAvg.toFixed(1)} ★` : "New"} hint={`${cook.ratingCount} ratings`} />
       </div>
 
+      {issues.length > 0 && (
+        <div className="mt-8 rounded-2xl border border-tomato/30 bg-tomato-soft/40 p-5">
+          <h2 className="text-lg font-bold text-tomato-deep">Reported problems</h2>
+          <ul className="mt-2 space-y-1 text-sm">
+            {issues.map((i) => (
+              <li key={i.issue.id}>
+                <span className="font-bold">{i.customer}</span> reported <span className="font-bold">{i.issue.kind.replace(/_/g, " ")}</span>
+                {i.issue.details && <span className="text-ink-soft"> · “{i.issue.details}”</span>}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-ink-muted">Gig Kitchens follows up with the neighbor. A quick note from you goes a long way.</p>
+        </div>
+      )}
       <h2 className="mt-8 text-xl font-bold">Needs your attention</h2>
       {open.length === 0 ? (
         <p className="card mt-3 p-6 text-sm text-ink-soft">No open orders. Share your public page with the neighborhood or add another meal.</p>

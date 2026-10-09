@@ -161,6 +161,21 @@ export const favorites = sqliteTable(
   (t) => [index("favorites_user_idx").on(t.userId)]
 );
 
+export const issues = sqliteTable(
+  "issues",
+  {
+    id: text("id").primaryKey(),
+    orderId: text("order_id").notNull().references(() => orders.id),
+    userId: text("user_id").notNull().references(() => users.id),
+    cookId: text("cook_id").notNull().references(() => cooks.id),
+    kind: text("kind").notNull(), // late | cold | missing | not_as_described | other
+    details: text("details").notNull().default(""),
+    status: text("status").notNull().default("open"), // open | refunded | resolved
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [index("issues_order_idx").on(t.orderId)]
+);
+
 export type User = typeof users.$inferSelect;
 export type Cook = typeof cooks.$inferSelect;
 export type Meal = typeof meals.$inferSelect;
@@ -169,3 +184,4 @@ export type OrderItem = typeof orderItems.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
 export type Post = typeof posts.$inferSelect;
 export type Reply = typeof replies.$inferSelect;
+export type Issue = typeof issues.$inferSelect;

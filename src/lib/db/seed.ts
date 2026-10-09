@@ -567,6 +567,52 @@ export function seedIfEmpty(db: Db) {
         .run();
     }
 
+    // Sample order history so demo dashboards aren't empty.
+    const demoId = customerIds["demo@gigkitchens.com"];
+    const mealRows = tx.select().from(s.meals).all();
+    const byTitle = (title: string) => mealRows.find((m) => m.title === title)!;
+    const sampleOrders: { customer: string; meal: string; qty: number; fulfillment: string; status: string; daysAgo: number; tip: number; note?: string }[] = [
+      { customer: demoId, meal: "Nonna's Baked Lasagna", qty: 2, fulfillment: "dropoff", status: "delivered", daysAgo: 9, tip: 0.15, note: "Side gate is open." },
+      { customer: demoId, meal: "Weeknight Thali", qty: 1, fulfillment: "pickup", status: "picked_up", daysAgo: 5, tip: 0.1 },
+      { customer: demoId, meal: "Beef Pho Kit", qty: 2, fulfillment: "delivery", status: "delivered", daysAgo: 2, tip: 0.2, note: "Extra lime if you have it!" },
+      { customer: demoId, meal: "Herb Roast Chicken Dinner", qty: 1, fulfillment: "dropoff", status: "accepted", daysAgo: 0, tip: 0.1 },
+      { customer: customerIds["jen@example.com"], meal: "Minestrone & Focaccia", qty: 3, fulfillment: "pickup", status: "placed", daysAgo: 0, tip: 0 },
+      { customer: customerIds["dev@example.com"], meal: "Chicken Cacciatore with Polenta", qty: 2, fulfillment: "delivery", status: "cooking", daysAgo: 0, tip: 0.15 },
+      { customer: customerIds["carla@example.com"], meal: "Smoked Brisket Plate", qty: 2, fulfillment: "pickup", status: "picked_up", daysAgo: 3, tip: 0.2 },
+      { customer: customerIds["sam@example.com"], meal: "Chicken Mole Negro", qty: 1, fulfillment: "dropoff", status: "delivered", daysAgo: 6, tip: 0.1 },
+    ];
+    for (const o of sampleOrders) {
+      const meal = byTitle(o.meal);
+      const subtotal = meal.priceCents * o.qty;
+      const fee = Math.round(subtotal * 0.08);
+      const delivery = o.fulfillment === "delivery" ? 399 : 0;
+      const tip = Math.round(subtotal * o.tip);
+      const when = new Date(Date.now() - o.daysAgo * 86400000).toISOString().slice(0, 19).replace("T", " ");
+      const orderId = newId("ord");
+      const customer = tx.select().from(s.users).where(eqId(s.users.id, o.customer)).get()!;
+      tx.insert(s.orders)
+        .values({
+          id: orderId,
+          userId: o.customer,
+          cookId: meal.cookId,
+          status: o.status,
+          fulfillment: o.fulfillment,
+          address: o.fulfillment === "pickup" ? "" : customer.address,
+          scheduledFor: `${o.daysAgo === 0 ? "Tonight" : "Earlier"} · ${meal.readyWindow}`,
+          note: o.note ?? "",
+          subtotalCents: subtotal,
+          feeCents: fee,
+          deliveryCents: delivery,
+          tipCents: tip,
+          totalCents: subtotal + fee + delivery + tip,
+          paymentRef: `demo_${newId()}`,
+          createdAt: when,
+          updatedAt: when,
+        })
+        .run();
+      tx.insert(s.orderItems).values({ id: newId("oi"), orderId, mealId: meal.id, title: meal.title, qty: o.qty, unitCents: meal.priceCents }).run();
+    }
+
     for (const p of POSTS) {
       const author = customerList[Math.floor(Math.random() * customerList.length)];
       tx.insert(s.posts)

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { getOrder, userHasReviewed } from "@/lib/queries";
+import { getOrder, userHasReviewed, getIssueForOrder } from "@/lib/queries";
+import { ReportIssue } from "@/components/orders/report-issue";
 import { Section } from "@/components/section";
 import { Photo } from "@/components/photo";
 import { StatusTimeline } from "@/components/orders/status-timeline";
@@ -23,6 +24,7 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
   if (!order || order.userId !== user.id) notFound();
   const justPlaced = sp.placed === "1";
   const done = isFinal(order.fulfillment, order.status) && order.status !== "cancelled";
+  const issue = getIssueForOrder(order.id);
 
   return (
     <Section className="py-10">
@@ -150,6 +152,7 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
             </dl>
             <p className="mt-2 text-xs text-ink-muted">Payment ref {order.paymentRef}</p>
           </div>
+          {order.status !== "cancelled" && order.status !== "placed" && <ReportIssue orderId={order.id} existing={issue ? { kind: issue.kind, status: issue.status } : null} />}
         </aside>
       </div>
     </Section>

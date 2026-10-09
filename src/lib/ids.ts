@@ -1,7 +1,11 @@
 import { randomBytes } from "node:crypto";
 
+const ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"; // no ambiguous 0/O/1/l/i
+
 export function newId(prefix = ""): string {
-  const raw = randomBytes(9).toString("base64url");
+  const bytes = randomBytes(12);
+  let raw = "";
+  for (const b of bytes) raw += ALPHABET[b % ALPHABET.length];
   return prefix ? `${prefix}_${raw}` : raw;
 }
 

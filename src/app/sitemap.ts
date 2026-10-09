@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = process.env.SITE_URL ?? "https://gigkitchens.com";
-  const statics = ["", "/meals", "/cooks", "/community", "/how-it-works", "/about", "/safety", "/faq", "/contact", "/become-a-cook"].map((p) => ({
+  const statics = ["", "/meals", "/cooks", "/community", "/how-it-works", "/about", "/safety", "/faq", "/contact", "/become-a-cook", "/neighborhoods", "/neighborhoods/maple-grove", "/neighborhoods/riverbend", "/neighborhoods/oak-hollow"].map((p) => ({
     url: `${base}${p}`,
     changeFrequency: "daily" as const,
     priority: p === "" ? 1 : 0.7,

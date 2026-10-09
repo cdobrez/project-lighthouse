@@ -23,6 +23,7 @@ const COLS = [
     title: "Neighborhood",
     links: [
       { href: "/community", label: "Community board" },
+      { href: "/neighborhoods", label: "Neighborhoods" },
       { href: "/about", label: "Our story" },
       { href: "/contact", label: "Contact" },
     ],

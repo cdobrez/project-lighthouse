@@ -39,7 +39,10 @@ export function Hero({ stats }: { stats: { cooks: number; meals: number; served:
             <Stat value={stats.served} label="dinners served" />
           </div>
           <p className="mt-4 text-sm text-ink-muted">
-            Cooking for your neighbors?{" "}
+            <Link href="/neighborhoods" className="font-bold text-ink hover:text-tomato">
+              See all neighborhoods
+            </Link>{" "}
+            · Cooking for your neighbors?{" "}
             <Link href="/become-a-cook" className="font-bold text-tomato hover:underline">
               Open your kitchen →
             </Link>

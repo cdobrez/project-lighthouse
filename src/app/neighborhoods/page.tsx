@@ -1,0 +1,43 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Section, SectionHeading } from "@/components/section";
+import { NEIGHBORHOODS } from "@/lib/neighborhoods";
+import { listCooks, listMeals, listPosts } from "@/lib/queries";
+import { slugify } from "@/lib/ids";
+
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = { title: "Neighborhoods", description: "The neighborhoods where Gig Kitchens cooks are serving tonight." };
+
+export default function NeighborhoodsPage() {
+  return (
+    <Section className="py-10">
+      <SectionHeading eyebrow="Neighborhoods" title="Where we're cooking" blurb="Gig Kitchens grows one street at a time. Pick your neighborhood to see its cooks, tonight's meals, and the community board." />
+      <div className="grid gap-5 md:grid-cols-3">
+        {NEIGHBORHOODS.map((n) => {
+          const cooks = listCooks(n.name).length;
+          const meals = listMeals({ neighborhood: n.name }).length;
+          const posts = listPosts(n.name).length;
+          return (
+            <Link key={n.name} href={`/neighborhoods/${slugify(n.name)}`} className="card p-6 transition-transform hover:-translate-y-0.5">
+              <p className="eyebrow">{n.zip}</p>
+              <h2 className="mt-1 text-2xl font-bold">{n.name}</h2>
+              <p className="mt-2 text-sm text-ink-soft">{n.blurb}</p>
+              <p className="mt-4 text-sm font-bold text-ink">
+                {cooks} cooks · {meals} meals · {posts} posts
+              </p>
+            </Link>
+          );
+        })}
+      </div>
+      <div className="card mt-8 bg-butter-soft/60 p-6 text-sm">
+        <p className="font-bold">Don&apos;t see your neighborhood?</p>
+        <p className="mt-1 text-ink-soft">
+          Tell us where you live and who already cooks for the block.{" "}
+          <Link href="/contact" className="font-bold text-tomato hover:underline">
+            Bring Gig Kitchens to your street →
+          </Link>
+        </p>
+      </div>
+    </Section>
+  );
+}
