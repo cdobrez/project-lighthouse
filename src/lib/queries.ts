@@ -301,3 +301,36 @@ export function listIssuesForCook(cookId: string) {
     .orderBy(desc(schema.issues.createdAt))
     .all();
 }
+
+export function adminOverview() {
+  const db = getDb();
+  const n = (q: number | undefined) => Number(q ?? 0);
+  const totals = {
+    users: n(db.select({ n: sql<number>`count(*)` }).from(schema.users).get()?.n),
+    cooks: n(db.select({ n: sql<number>`count(*)` }).from(schema.cooks).get()?.n),
+    meals: n(db.select({ n: sql<number>`count(*)` }).from(schema.meals).get()?.n),
+    orders: n(db.select({ n: sql<number>`count(*)` }).from(schema.orders).get()?.n),
+    gmvCents: n(db.select({ n: sql<number>`coalesce(sum(subtotal_cents),0)` }).from(schema.orders).where(sql`status != 'cancelled'`).get()?.n),
+    feesCents: n(db.select({ n: sql<number>`coalesce(sum(fee_cents + delivery_cents),0)` }).from(schema.orders).where(sql`status != 'cancelled'`).get()?.n),
+    openIssues: n(db.select({ n: sql<number>`count(*)` }).from(schema.issues).where(eq(schema.issues.status, "open")).get()?.n),
+    waitlist: n(db.select({ n: sql<number>`count(*)` }).from(schema.waitlist).get()?.n),
+  };
+  const recentOrders = hydrateOrders(db.select().from(schema.orders).orderBy(desc(schema.orders.createdAt)).limit(15).all());
+  const issues = db
+    .select({ issue: schema.issues, customer: schema.users.name, cook: schema.cooks.displayName })
+    .from(schema.issues)
+    .innerJoin(schema.users, eq(schema.issues.userId, schema.users.id))
+    .innerJoin(schema.cooks, eq(schema.issues.cookId, schema.cooks.id))
+    .orderBy(desc(schema.issues.createdAt))
+    .limit(30)
+    .all();
+  const waitlistRows = db.select().from(schema.waitlist).orderBy(desc(schema.waitlist.createdAt)).limit(50).all();
+  const cooks = db.select().from(schema.cooks).orderBy(desc(schema.cooks.createdAt)).all();
+  const byNeighborhood = db
+    .select({ neighborhood: schema.cooks.neighborhood, orders: sql<number>`count(${schema.orders.id})`, gmv: sql<number>`coalesce(sum(${schema.orders.subtotalCents}),0)` })
+    .from(schema.cooks)
+    .leftJoin(schema.orders, eq(schema.orders.cookId, schema.cooks.id))
+    .groupBy(schema.cooks.neighborhood)
+    .all();
+  return { totals, recentOrders, issues, waitlist: waitlistRows, cooks, byNeighborhood };
+}

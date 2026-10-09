@@ -385,6 +385,7 @@ const COOKS: SeedCook[] = [
 
 const CUSTOMERS = [
   { name: "Demo Neighbor", email: "demo@gigkitchens.com", neighborhood: "Maple Grove", zip: "60515", hue: 210 },
+  { name: "Gig Kitchens Owner", email: "owner@gigkitchens.com", neighborhood: "Maple Grove", zip: "60515", hue: 20, role: "admin" },
   { name: "Jen Alvarez", email: "jen@example.com", neighborhood: "Maple Grove", zip: "60515", hue: 120 },
   { name: "Dev Patel", email: "dev@example.com", neighborhood: "Riverbend", zip: "60516", hue: 260 },
   { name: "Carla Nguyen", email: "carla@example.com", neighborhood: "Oak Hollow", zip: "60514", hue: 30 },
@@ -453,6 +454,7 @@ export function seedIfEmpty(db: Db) {
           name: c.name,
           email: c.email,
           passwordHash: password,
+          role: "role" in c && c.role ? c.role : "customer",
           neighborhood: c.neighborhood,
           zip: c.zip,
           address: `${100 + Math.floor(Math.random() * 800)} Elm St, ${c.neighborhood}`,
@@ -532,7 +534,9 @@ export function seedIfEmpty(db: Db) {
     }
 
     // Reviews: a few per meal from a rotating set of customers.
-    const customerList = Object.values(customerIds);
+    const customerList = Object.entries(customerIds)
+      .filter(([email]) => email !== "owner@gigkitchens.com")
+      .map(([, id]) => id);
     let line = 0;
     for (const { mealId, cookId } of allMealIds) {
       const count = 3 + Math.floor(Math.random() * 4);
@@ -571,6 +575,13 @@ export function seedIfEmpty(db: Db) {
     const demoId = customerIds["demo@gigkitchens.com"];
     const mealRows = tx.select().from(s.meals).all();
     const byTitle = (title: string) => mealRows.find((m) => m.title === title)!;
+    tx.insert(s.waitlist)
+      .values([
+        { id: newId("wl"), email: "neighbor1@example.com", zip: "60521", neighborhood: "Hinsdale", wantsToCook: false, note: "" },
+        { id: newId("wl"), email: "bakerjane@example.com", zip: "60559", neighborhood: "Westmont", wantsToCook: true, note: "I bake sourdough every weekend and always have extra." },
+      ])
+      .run();
+
     const sampleOrders: { customer: string; meal: string; qty: number; fulfillment: string; status: string; daysAgo: number; tip: number; note?: string }[] = [
       { customer: demoId, meal: "Nonna's Baked Lasagna", qty: 2, fulfillment: "dropoff", status: "delivered", daysAgo: 9, tip: 0.15, note: "Side gate is open." },
       { customer: demoId, meal: "Weeknight Thali", qty: 1, fulfillment: "pickup", status: "picked_up", daysAgo: 5, tip: 0.1 },

@@ -4,6 +4,8 @@ import { listMeals, listCuisines, type MealFilters as Filters } from "@/lib/quer
 import { MealCard } from "@/components/meal-card";
 import { MealFilters } from "@/components/meals/filters";
 import { Section } from "@/components/section";
+import { WeekStrip } from "@/components/meals/week-strip";
+import { DAY_ORDER } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +34,11 @@ export default async function MealsPage(props: PageProps<"/meals">) {
   };
   const meals = listMeals(filters);
   const cuisines = listCuisines();
+  const weekPool = listMeals({ ...filters, day: undefined });
+  const counts = Object.fromEntries(DAY_ORDER.map((d) => [d, weekPool.filter((m) => m.availableDays.includes(d)).length]));
+  const baseParams = new URLSearchParams(
+    Object.entries(sp).flatMap(([k, v]) => (typeof v === "string" && v && k !== "day" ? [[k, v]] : []))
+  ).toString();
 
   return (
     <Section className="py-10">
@@ -51,6 +58,7 @@ export default async function MealsPage(props: PageProps<"/meals">) {
           </Suspense>
         </aside>
         <div>
+          <WeekStrip counts={counts} active={filters.day} baseParams={baseParams} />
           {meals.length === 0 ? (
             <div className="card p-10 text-center">
               <p className="text-4xl" aria-hidden>

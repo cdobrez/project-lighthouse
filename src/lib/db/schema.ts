@@ -176,6 +176,16 @@ export const issues = sqliteTable(
   (t) => [index("issues_order_idx").on(t.orderId)]
 );
 
+export const waitlist = sqliteTable("waitlist", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull(),
+  zip: text("zip").notNull().default(""),
+  neighborhood: text("neighborhood").notNull().default(""),
+  wantsToCook: integer("wants_to_cook", { mode: "boolean" }).notNull().default(false),
+  note: text("note").notNull().default(""),
+  createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+});
+
 export type User = typeof users.$inferSelect;
 export type Cook = typeof cooks.$inferSelect;
 export type Meal = typeof meals.$inferSelect;
@@ -185,3 +195,4 @@ export type Review = typeof reviews.$inferSelect;
 export type Post = typeof posts.$inferSelect;
 export type Reply = typeof replies.$inferSelect;
 export type Issue = typeof issues.$inferSelect;
+export type WaitlistEntry = typeof waitlist.$inferSelect;

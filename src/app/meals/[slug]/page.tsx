@@ -32,8 +32,20 @@ export default async function MealPage(props: PageProps<"/meals/[slug]">) {
   const saved = user ? userFavorites(user.id).has(meal.id) : false;
   const more = listMeals({}).filter((m) => m.cookId === meal.cookId && m.id !== meal.id).slice(0, 3);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: meal.title,
+    description: meal.description,
+    image: `${process.env.SITE_URL ?? "https://gigkitchens.com"}/images/${meal.imageKey}.jpg`,
+    brand: { "@type": "Organization", name: meal.cook.displayName },
+    offers: { "@type": "Offer", priceCurrency: "USD", price: (meal.priceCents / 100).toFixed(2), availability: meal.portionsAvailable > 0 ? "https://schema.org/InStock" : "https://schema.org/SoldOut" },
+    ...(meal.ratingCount > 0 ? { aggregateRating: { "@type": "AggregateRating", ratingValue: meal.ratingAvg, reviewCount: meal.ratingCount } } : {}),
+  };
+
   return (
     <Section className="py-8">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <nav className="mb-5 text-sm text-ink-muted" aria-label="Breadcrumb">
         <Link href="/meals" className="hover:text-tomato">
           Tonight&apos;s meals

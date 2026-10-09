@@ -12,7 +12,8 @@ Home-cooked meals from your neighbors. Busy households order real dinners from v
 | Ordering | `/cart`, `/checkout`, `/orders`, `/orders/[id]` | One-cook basket (localStorage), pickup / drop-off / delivery, tips, demo payment, status timeline, cancel, rate after delivery |
 | Accounts | `/signup`, `/login`, `/account` | Email + password, signed cookie sessions, profile, favorites |
 | Cooks | `/become-a-cook`, `/cook`, `/cook/meals`, `/cook/meals/new`, `/cook/meals/[id]/edit`, `/cook/profile` | Onboarding with earnings calculator, order queue with status actions, menu management, pause/resume |
-| Community | `/community`, `/community/[id]` | Stories, requests, recipe tips, events; replies and reactions |
+| Community | `/community`, `/community/[id]`, `/neighborhoods`, `/neighborhoods/[slug]` | Stories, requests, recipe tips, events; replies and reactions; neighborhood hubs |
+| Growth | waitlist form on `/neighborhoods` and `/contact`, `/admin` | Capture demand in new areas; owner dashboard with GMV, platform revenue, issues and kitchens |
 | Static | `/how-it-works`, `/about`, `/safety`, `/faq`, `/contact`, `/terms`, `/privacy` | |
 
 ## Stack
@@ -36,6 +37,7 @@ Demo accounts (password `neighbor123`):
 
 - Neighbor: `demo@gigkitchens.com`
 - Cook: `rosa@example.com` (also priya@, marcus@, linh@, hannah@, tomas@example.com)
+- Owner / admin: `owner@gigkitchens.com` (opens `/admin`: revenue, orders, reported problems, waitlist, pause a kitchen)
 
 ## Configuration
 
@@ -56,6 +58,10 @@ For a serverless host such as Vercel, swap the Drizzle driver to Postgres (Neon,
 ## Photos
 
 All photography lives in `public/images` and is registered in `src/lib/images.ts`. See `docs/PHOTOS.md` for the list and how to add more.
+
+## Testing
+
+`npm run test:e2e` drives a real browser through sign-up, basket, checkout, cook order handling, meal creation, rating, and the community board against a running server (`npm run dev` or `npm start`). It needs Chromium: either `npx playwright install chromium` once, or set `CHROME_PATH` to an existing Chrome binary.
 
 ## Scripts
 

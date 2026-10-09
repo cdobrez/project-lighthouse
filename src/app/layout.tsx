@@ -42,7 +42,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         </a>
         <CartProvider>
           <SiteHeader
-            user={user ? { name: user.name, neighborhood: user.neighborhood, avatarHue: user.avatarHue } : null}
+            user={user ? { name: user.name, neighborhood: user.neighborhood, avatarHue: user.avatarHue, isAdmin: user.role === "admin" } : null}
             isCook={Boolean(cook)}
           />
           <main id="main" className="flex-1">

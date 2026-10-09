@@ -8,7 +8,7 @@ import { Avatar } from "./avatar";
 import { useCart } from "./cart/cart-provider";
 
 type Props = {
-  user: { name: string; neighborhood: string; avatarHue: number } | null;
+  user: { name: string; neighborhood: string; avatarHue: number; isAdmin?: boolean } | null;
   isCook: boolean;
 };
 
@@ -43,6 +43,11 @@ export function SiteHeader({ user, isCook }: Props) {
           })}
         </nav>
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+          {user?.isAdmin && (
+            <Link href="/admin" className="btn-ghost hidden sm:inline-flex">
+              Admin
+            </Link>
+          )}
           {isCook ? (
             <Link href="/cook" className="btn-ghost hidden sm:inline-flex">
               My kitchen

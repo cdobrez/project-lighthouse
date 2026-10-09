@@ -4,6 +4,7 @@ import { Section, SectionHeading } from "@/components/section";
 import { NEIGHBORHOODS } from "@/lib/neighborhoods";
 import { listCooks, listMeals, listPosts } from "@/lib/queries";
 import { slugify } from "@/lib/ids";
+import { WaitlistForm } from "@/components/waitlist-form";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Neighborhoods", description: "The neighborhoods where Gig Kitchens cooks are serving tonight." };
@@ -29,14 +30,8 @@ export default function NeighborhoodsPage() {
           );
         })}
       </div>
-      <div className="card mt-8 bg-butter-soft/60 p-6 text-sm">
-        <p className="font-bold">Don&apos;t see your neighborhood?</p>
-        <p className="mt-1 text-ink-soft">
-          Tell us where you live and who already cooks for the block.{" "}
-          <Link href="/contact" className="font-bold text-tomato hover:underline">
-            Bring Gig Kitchens to your street →
-          </Link>
-        </p>
+      <div className="mt-10 max-w-xl">
+        <WaitlistForm />
       </div>
     </Section>
   );

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/static-page";
+import { WaitlistForm } from "@/components/waitlist-form";
 
 export const metadata: Metadata = { title: "Contact" };
 
@@ -10,6 +11,9 @@ export default function ContactPage() {
         <Card title="Order help" body="Something late, cold, or missing? Open the order page and tap Report, or email us with the order number." link="mailto:help@gigkitchens.com" label="help@gigkitchens.com" />
         <Card title="Cooks" body="Onboarding, certificates, payouts, or a question about your kitchen review." link="mailto:cooks@gigkitchens.com" label="cooks@gigkitchens.com" />
         <Card title="Bring us to your street" body="Tell us your neighborhood and the cook everyone already talks about." link="mailto:hello@gigkitchens.com" label="hello@gigkitchens.com" />
+      </div>
+      <div className="mt-8 max-w-xl">
+        <WaitlistForm />
       </div>
     </StaticPage>
   );
