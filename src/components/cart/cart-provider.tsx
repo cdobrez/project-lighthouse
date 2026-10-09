@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useSyncExternalStore } from "react";
+import { cartStore } from "./cart-store";
 
 export type CartLine = {
   mealId: string;
@@ -30,57 +31,38 @@ type CartState = {
 };
 
 const CartContext = createContext<CartState | null>(null);
-const KEY = "gigkitchens.cart.v1";
+
+function useHydrated() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [lines, setLines] = useState<CartLine[]>([]);
-  const [hydrated, setHydrated] = useState(false);
+  const lines = useSyncExternalStore(cartStore.subscribe, cartStore.getSnapshot, cartStore.getServerSnapshot);
+  const hydrated = useHydrated();
 
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(KEY);
-      if (raw) setLines(JSON.parse(raw));
-    } catch {
-      /* ignore */
+  const add = useCallback<CartState["add"]>((line, qty = 1) => {
+    const prev = cartStore.getSnapshot();
+    if (prev.length && prev[0].cookId !== line.cookId) {
+      return {
+        ok: false,
+        reason: `Your basket already has food from ${prev[0].cookName}. One cook per order keeps pickup simple, so finish or clear that basket first.`,
+      };
     }
-    setHydrated(true);
+    const existing = prev.find((l) => l.mealId === line.mealId);
+    cartStore.set(existing ? prev.map((l) => (l.mealId === line.mealId ? { ...l, qty: l.qty + qty } : l)) : [...prev, { ...line, qty }]);
+    return { ok: true };
   }, []);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      window.localStorage.setItem(KEY, JSON.stringify(lines));
-    } catch {
-      /* ignore */
-    }
-  }, [lines, hydrated]);
-
-  const add = useCallback<CartState["add"]>(
-    (line, qty = 1) => {
-      let result: { ok: boolean; reason?: string } = { ok: true };
-      setLines((prev) => {
-        if (prev.length && prev[0].cookId !== line.cookId) {
-          result = { ok: false, reason: `Your basket already has food from ${prev[0].cookName}. One cook per order keeps pickup simple, so finish or clear that basket first.` };
-          return prev;
-        }
-        const existing = prev.find((l) => l.mealId === line.mealId);
-        if (existing) {
-          return prev.map((l) => (l.mealId === line.mealId ? { ...l, qty: l.qty + qty } : l));
-        }
-        return [...prev, { ...line, qty }];
-      });
-      return result;
-    },
-    []
-  );
-
-  const remove = useCallback((mealId: string) => setLines((prev) => prev.filter((l) => l.mealId !== mealId)), []);
-  const setQty = useCallback(
-    (mealId: string, qty: number) =>
-      setLines((prev) => (qty <= 0 ? prev.filter((l) => l.mealId !== mealId) : prev.map((l) => (l.mealId === mealId ? { ...l, qty } : l)))),
-    []
-  );
-  const clear = useCallback(() => setLines([]), []);
+  const remove = useCallback((mealId: string) => cartStore.set(cartStore.getSnapshot().filter((l) => l.mealId !== mealId)), []);
+  const setQty = useCallback((mealId: string, qty: number) => {
+    const prev = cartStore.getSnapshot();
+    cartStore.set(qty <= 0 ? prev.filter((l) => l.mealId !== mealId) : prev.map((l) => (l.mealId === mealId ? { ...l, qty } : l)));
+  }, []);
+  const clear = useCallback(() => cartStore.set([]), []);
 
   const value = useMemo<CartState>(() => {
     const count = lines.reduce((a, l) => a + l.qty, 0);

@@ -26,7 +26,7 @@ export function SiteHeader({ user, isCook }: Props) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-line/70 bg-cream/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-4 sm:px-6">
         <Logo />
         <nav className="ml-6 hidden items-center gap-1 md:flex" aria-label="Primary">
           {NAV.map((n) => {
@@ -42,7 +42,7 @@ export function SiteHeader({ user, isCook }: Props) {
             );
           })}
         </nav>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           {isCook ? (
             <Link href="/cook" className="btn-ghost hidden sm:inline-flex">
               My kitchen
@@ -52,7 +52,7 @@ export function SiteHeader({ user, isCook }: Props) {
               Cook with us
             </Link>
           )}
-          <Link href="/cart" className="btn-secondary relative" aria-label={`Basket, ${count} items`}>
+          <Link href="/cart" className="btn-secondary relative px-2.5 sm:px-5" aria-label={`Basket, ${count} items`}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M3 7h18l-1.5 11a2 2 0 0 1-2 1.7h-11a2 2 0 0 1-2-1.7z" />
               <path d="M8 7a4 4 0 0 1 8 0" />
@@ -70,12 +70,12 @@ export function SiteHeader({ user, isCook }: Props) {
               <span className="hidden text-sm font-bold sm:inline">{user.name.split(" ")[0]}</span>
             </Link>
           ) : (
-            <Link href="/login" className="btn-primary">
+            <Link href="/login" className="btn-primary px-3.5 sm:px-5">
               Sign in
             </Link>
           )}
           <button
-            className="btn-ghost md:hidden"
+            className="btn-ghost px-2.5 md:hidden"
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
             aria-controls="mobile-nav"

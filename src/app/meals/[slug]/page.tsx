@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getMealBySlug, listReviewsForMeal, listMeals, userHasReviewed } from "@/lib/queries";
+import { getMealBySlug, listReviewsForMeal, listMeals, userHasReviewed, userFavorites } from "@/lib/queries";
+import { FavoriteButton } from "@/components/favorite-button";
 import { getCurrentUser } from "@/lib/auth";
 import { Photo } from "@/components/photo";
 import { RatingStars } from "@/components/rating-stars";
@@ -28,6 +29,7 @@ export default async function MealPage(props: PageProps<"/meals/[slug]">) {
   const [user] = await Promise.all([getCurrentUser()]);
   const reviews = listReviewsForMeal(meal.id);
   const mine = user ? userHasReviewed(user.id, meal.id) : null;
+  const saved = user ? userFavorites(user.id).has(meal.id) : false;
   const more = listMeals({}).filter((m) => m.cookId === meal.cookId && m.id !== meal.id).slice(0, 3);
 
   return (
@@ -54,7 +56,10 @@ export default async function MealPage(props: PageProps<"/meals/[slug]">) {
                 </span>
               ))}
             </div>
-            <h1 className="mt-3 text-4xl font-bold leading-tight tracking-tight">{meal.title}</h1>
+            <div className="mt-3 flex items-start justify-between gap-3">
+              <h1 className="text-4xl font-bold leading-tight tracking-tight">{meal.title}</h1>
+              <FavoriteButton mealId={meal.id} initial={saved} signedIn={Boolean(user)} />
+            </div>
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-soft">
               <RatingStars value={meal.ratingAvg} count={meal.ratingCount} size="md" />
               <span>·</span>

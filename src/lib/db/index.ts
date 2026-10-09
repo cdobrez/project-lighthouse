@@ -9,7 +9,6 @@ import { seedIfEmpty } from "./seed";
 export type Db = BetterSQLite3Database<typeof schema>;
 
 declare global {
-  // eslint-disable-next-line no-var
   var __gigkitchensDb: Db | undefined;
 }
 

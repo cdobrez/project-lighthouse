@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gig Kitchens
 
-## Getting Started
+Home-cooked meals from your neighbors. Busy households order real dinners from vetted home cooks a few streets away, then pick up on the porch, get a porch drop-off, or have it delivered. Cooks earn extra income from their own kitchen, neighbors rate recipes, and the street gets a little closer.
 
-First, run the development server:
+## What's in the app
+
+| Area | Routes | Notes |
+| --- | --- | --- |
+| Home | `/` | Hero, how it works, tonight's meals, cooks, photo stories, community pulse |
+| Browse | `/meals`, `/meals/[slug]` | Search, neighborhood / day / hand-off / cuisine / diet filters, sorting, meal detail with ratings and order panel |
+| Cooks | `/cooks`, `/cooks/[slug]` | Cook directory and public kitchen pages |
+| Ordering | `/cart`, `/checkout`, `/orders`, `/orders/[id]` | One-cook basket (localStorage), pickup / drop-off / delivery, tips, demo payment, status timeline, cancel, rate after delivery |
+| Accounts | `/signup`, `/login`, `/account` | Email + password, signed cookie sessions, profile, favorites |
+| Cooks | `/become-a-cook`, `/cook`, `/cook/meals`, `/cook/meals/new`, `/cook/meals/[id]/edit`, `/cook/profile` | Onboarding with earnings calculator, order queue with status actions, menu management, pause/resume |
+| Community | `/community`, `/community/[id]` | Stories, requests, recipe tips, events; replies and reactions |
+| Static | `/how-it-works`, `/about`, `/safety`, `/faq`, `/contact`, `/terms`, `/privacy` | |
+
+## Stack
+
+- Next.js 16 (App Router, Server Actions, Turbopack) + React 19 + TypeScript
+- Tailwind CSS v4 with a warm custom palette (`src/app/globals.css`)
+- SQLite via `better-sqlite3` + Drizzle ORM (`src/lib/db`), migrations in `drizzle/`
+- Sessions: HS256 JWT in an httpOnly cookie (`jose`), scrypt password hashing
+- Validation with `zod`
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The database is created and seeded on first request at `data/gigkitchens.db` (six cooks, sixteen meals, reviews, community posts).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Demo accounts (password `neighbor123`):
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Neighbor: `demo@gigkitchens.com`
+- Cook: `rosa@example.com` (also priya@, marcus@, linh@, hannah@, tomas@example.com)
 
-## Learn More
+## Configuration
 
-To learn more about Next.js, take a look at the following resources:
+Copy `.env.example` to `.env.local`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable | Purpose |
+| --- | --- |
+| `SESSION_SECRET` | Required in production. Any long random string. |
+| `DATABASE_PATH` | SQLite file path (default `./data/gigkitchens.db`). Use `:memory:` for throwaway environments. |
+| `SITE_URL` | Canonical URL for metadata (default `https://gigkitchens.com`). |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploying
 
-## Deploy on Vercel
+The app needs a Node host with a writable disk for SQLite (Railway, Render, Fly.io, a VPS, Docker). On a read-only filesystem it falls back to an in-memory database that reseeds on restart, which is fine for previews but not for real orders.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+For a serverless host such as Vercel, swap the Drizzle driver to Postgres (Neon, Supabase, Vercel Postgres): change `drizzle.config.ts` to `dialect: "postgresql"`, replace `sqliteTable` with `pgTable` in `src/lib/db/schema.ts`, and open the connection in `src/lib/db/index.ts` with `drizzle-orm/node-postgres`. Queries and actions are driver-agnostic.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Photos
+
+All photography lives in `public/images` and is registered in `src/lib/images.ts`. See `docs/PHOTOS.md` for the list and how to add more.
+
+## Scripts
+
+```bash
+npm run dev      # develop
+npm run build    # production build
+npm run start    # serve the build
+npm run lint     # eslint
+npx drizzle-kit generate   # after changing the schema
+```
+
+## Roadmap ideas
+
+- Real payments (Stripe Connect so cooks get paid out directly)
+- Photo uploads for cooks
+- Push / SMS order updates
+- Neighbor courier matching for delivery
+- Map-based discovery and distance filters
+- Weekly subscriptions ("Rosa, every Wednesday")
