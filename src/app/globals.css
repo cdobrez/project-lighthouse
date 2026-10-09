@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+:root {
+  --cream: #fbf6ee;
+  --cream-deep: #f3e9d8;
+  --paper: #fffdf8;
+  --ink: #2b2118;
+  --ink-soft: #5c4d40;
+  --ink-muted: #8a7a6b;
+  --tomato: #c8502f;
+  --tomato-deep: #a63f24;
+  --tomato-soft: #f6dcd2;
+  --sage: #6f8a63;
+  --sage-soft: #e2ead9;
+  --butter: #f2c66b;
+  --butter-soft: #fbeccb;
+  --line: #e6dccb;
+}
+
+@theme inline {
+  --color-cream: var(--cream);
+  --color-cream-deep: var(--cream-deep);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-tomato: var(--tomato);
+  --color-tomato-deep: var(--tomato-deep);
+  --color-tomato-soft: var(--tomato-soft);
+  --color-sage: var(--sage);
+  --color-sage-soft: var(--sage-soft);
+  --color-butter: var(--butter);
+  --color-butter-soft: var(--butter-soft);
+  --color-line: var(--line);
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-nunito), system-ui, sans-serif;
+  --radius-card: 1.25rem;
+  --shadow-card: 0 1px 2px rgb(43 33 24 / 0.06), 0 10px 30px -12px rgb(43 33 24 / 0.18);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 60, "WONK" 0;
+}
+
+@layer components {
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tomato disabled:cursor-not-allowed disabled:opacity-50;
+}
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tomato disabled:cursor-not-allowed disabled:opacity-50 bg-tomato text-white shadow-[0_6px_18px_-8px_rgb(200_80_47/0.7)] hover:bg-tomato-deep hover:-translate-y-px;
+}
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tomato disabled:cursor-not-allowed disabled:opacity-50 bg-paper text-ink ring-1 ring-line hover:bg-cream-deep;
+}
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tomato disabled:cursor-not-allowed disabled:opacity-50 text-ink-soft hover:bg-cream-deep hover:text-ink;
+}
+.card {
+  @apply rounded-[var(--radius-card)] bg-paper ring-1 ring-line shadow-[var(--shadow-card)];
+}
+.input {
+  @apply w-full rounded-xl border border-line bg-paper px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted focus:border-tomato focus:outline-none focus:ring-2 focus:ring-tomato/20;
+}
+.label {
+  @apply mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-soft;
+}
+.chip {
+  @apply inline-flex items-center gap-1 rounded-full bg-cream-deep px-2.5 py-1 text-xs font-semibold text-ink-soft;
+}
+.eyebrow {
+  @apply text-xs font-extrabold uppercase tracking-[0.18em] text-tomato;
+}
+}
+
+.prose-home p + p {
+  margin-top: 0.75rem;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: fade-up 0.5s ease-out both;
+}
