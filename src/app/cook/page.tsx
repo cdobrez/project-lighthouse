@@ -13,8 +13,8 @@ export const metadata: Metadata = { title: "Cook dashboard" };
 export default async function CookOrdersPage(props: PageProps<"/cook">) {
   const sp = await props.searchParams;
   const cook = await requireCook();
-  const orders = listOrdersForCook(cook.id);
-  const issues = listIssuesForCook(cook.id);
+  const orders = await listOrdersForCook(cook.id);
+  const issues = await listIssuesForCook(cook.id);
   const open = orders.filter((o) => !isFinal(o.fulfillment, o.status));
   const done = orders.filter((o) => isFinal(o.fulfillment, o.status));
   const earned = done.filter((o) => o.status !== "cancelled").reduce((a, o) => a + Math.round(o.subtotalCents * COOK_SHARE) + o.tipCents, 0);

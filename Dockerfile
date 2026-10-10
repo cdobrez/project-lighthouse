@@ -17,7 +17,6 @@ ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
-COPY --from=build /app/drizzle ./drizzle
 RUN mkdir -p /app/data && chown -R node:node /app
 USER node
 VOLUME ["/app/data"]

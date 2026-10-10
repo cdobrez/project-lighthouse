@@ -437,18 +437,18 @@ const POSTS = [
   },
 ];
 
-export function seedIfEmpty(db: Db) {
-  const existing = db.select({ id: s.users.id }).from(s.users).limit(1).all();
+export async function seedIfEmpty(db: Db) {
+  const existing = await db.select({ id: s.users.id }).from(s.users).limit(1).all();
   if (existing.length > 0) return;
 
   const password = hashPassword("neighbor123");
   const customerIds: Record<string, string> = {};
 
-  db.transaction((tx) => {
+  await db.transaction(async (tx) => {
     for (const c of CUSTOMERS) {
       const id = newId("usr");
       customerIds[c.email] = id;
-      tx.insert(s.users)
+      await tx.insert(s.users)
         .values({
           id,
           name: c.name,
@@ -468,7 +468,7 @@ export function seedIfEmpty(db: Db) {
 
     for (const c of COOKS) {
       const userId = newId("usr");
-      tx.insert(s.users)
+      await tx.insert(s.users)
         .values({
           id: userId,
           name: c.name,
@@ -483,7 +483,7 @@ export function seedIfEmpty(db: Db) {
 
       const cookId = newId("cook");
       cookIds.push(cookId);
-      tx.insert(s.cooks)
+      await tx.insert(s.cooks)
         .values({
           id: cookId,
           userId,
@@ -508,7 +508,7 @@ export function seedIfEmpty(db: Db) {
       for (const m of c.meals) {
         const mealId = newId("meal");
         allMealIds.push({ mealId, cookId });
-        tx.insert(s.meals)
+        await tx.insert(s.meals)
           .values({
             id: mealId,
             cookId,
@@ -544,7 +544,7 @@ export function seedIfEmpty(db: Db) {
       for (let i = 0; i < count; i++) {
         const rating = Math.random() < 0.75 ? 5 : 4;
         sum += rating;
-        tx.insert(s.reviews)
+        await tx.insert(s.reviews)
           .values({
             id: newId("rev"),
             userId: customerList[(line + i) % customerList.length],
@@ -556,16 +556,16 @@ export function seedIfEmpty(db: Db) {
           .run();
       }
       line += count;
-      tx.update(s.meals)
+      await tx.update(s.meals)
         .set({ ratingAvg: Math.round((sum / count) * 10) / 10, ratingCount: count })
         .where(eqId(s.meals.id, mealId))
         .run();
     }
 
     for (const cookId of cookIds) {
-      const rows = tx.select({ r: s.reviews.rating }).from(s.reviews).where(eqId(s.reviews.cookId, cookId)).all();
+      const rows = await tx.select({ r: s.reviews.rating }).from(s.reviews).where(eqId(s.reviews.cookId, cookId)).all();
       const avg = rows.length ? rows.reduce((a, b) => a + b.r, 0) / rows.length : 0;
-      tx.update(s.cooks)
+      await tx.update(s.cooks)
         .set({ ratingAvg: Math.round(avg * 10) / 10, ratingCount: rows.length })
         .where(eqId(s.cooks.id, cookId))
         .run();
@@ -573,9 +573,9 @@ export function seedIfEmpty(db: Db) {
 
     // Sample order history so demo dashboards aren't empty.
     const demoId = customerIds["demo@gigkitchens.com"];
-    const mealRows = tx.select().from(s.meals).all();
+    const mealRows = await tx.select().from(s.meals).all();
     const byTitle = (title: string) => mealRows.find((m) => m.title === title)!;
-    tx.insert(s.waitlist)
+    await tx.insert(s.waitlist)
       .values([
         { id: newId("wl"), email: "neighbor1@example.com", zip: "60521", neighborhood: "Hinsdale", wantsToCook: false, note: "" },
         { id: newId("wl"), email: "bakerjane@example.com", zip: "60559", neighborhood: "Westmont", wantsToCook: true, note: "I bake sourdough every weekend and always have extra." },
@@ -600,15 +600,15 @@ export function seedIfEmpty(db: Db) {
       const tip = Math.round(subtotal * o.tip);
       const when = new Date(Date.now() - o.daysAgo * 86400000).toISOString().slice(0, 19).replace("T", " ");
       const orderId = newId("ord");
-      const customer = tx.select().from(s.users).where(eqId(s.users.id, o.customer)).get()!;
-      tx.insert(s.orders)
+      const customer = await tx.select().from(s.users).where(eqId(s.users.id, o.customer)).get()!;
+      await tx.insert(s.orders)
         .values({
           id: orderId,
           userId: o.customer,
           cookId: meal.cookId,
           status: o.status,
           fulfillment: o.fulfillment,
-          address: o.fulfillment === "pickup" ? "" : customer.address,
+          address: o.fulfillment === "pickup" ? "" : customer?.address ?? "",
           scheduledFor: `${o.daysAgo === 0 ? "Tonight" : "Earlier"} · ${meal.readyWindow}`,
           note: o.note ?? "",
           subtotalCents: subtotal,
@@ -621,12 +621,12 @@ export function seedIfEmpty(db: Db) {
           updatedAt: when,
         })
         .run();
-      tx.insert(s.orderItems).values({ id: newId("oi"), orderId, mealId: meal.id, title: meal.title, qty: o.qty, unitCents: meal.priceCents }).run();
+      await tx.insert(s.orderItems).values({ id: newId("oi"), orderId, mealId: meal.id, title: meal.title, qty: o.qty, unitCents: meal.priceCents }).run();
     }
 
     for (const p of POSTS) {
       const author = customerList[Math.floor(Math.random() * customerList.length)];
-      tx.insert(s.posts)
+      await tx.insert(s.posts)
         .values({
           id: newId("post"),
           userId: author,

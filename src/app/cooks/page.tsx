@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Meet the cooks", description: "Vette
 export default async function CooksPage(props: PageProps<"/cooks">) {
   const sp = await props.searchParams;
   const neighborhood = typeof sp.neighborhood === "string" ? sp.neighborhood : undefined;
-  const cooks = listCooks(neighborhood);
+  const cooks = await listCooks(neighborhood);
   return (
     <Section className="py-10">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

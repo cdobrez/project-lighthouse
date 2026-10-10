@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
-  serverExternalPackages: ["better-sqlite3"],
+  // Standalone output is for the Docker image; Vercel builds its own output.
+  output: process.env.VERCEL ? undefined : "standalone",
+  serverExternalPackages: ["@libsql/client"],
   turbopack: {
     rules: {
       "*.css": {

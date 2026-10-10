@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Your orders" };
 export default async function OrdersPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/orders");
-  const orders = listOrdersForUser(user.id);
+  const orders = await listOrdersForUser(user.id);
   const active = orders.filter((o) => !isFinal(o.fulfillment, o.status));
   const past = orders.filter((o) => isFinal(o.fulfillment, o.status));
 
@@ -49,7 +49,7 @@ export default async function OrdersPage() {
   );
 }
 
-function OrderList({ orders }: { orders: ReturnType<typeof listOrdersForUser> }) {
+function OrderList({ orders }: { orders: Awaited<ReturnType<typeof listOrdersForUser>> }) {
   return (
     <ul className="mt-3 grid gap-4 md:grid-cols-2">
       {orders.map((o) => (

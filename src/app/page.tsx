@@ -10,12 +10,12 @@ import { listMeals, listCooks, recentReviews, listPosts, siteStats } from "@/lib
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
-  const stats = siteStats();
-  const meals = listMeals({ sort: "popular" }).slice(0, 6);
-  const cooks = listCooks().slice(0, 4);
-  const reviews = recentReviews(4);
-  const posts = listPosts().slice(0, 4);
+export default async function HomePage() {
+  const stats = await siteStats();
+  const meals = (await listMeals({ sort: "popular" })).slice(0, 6);
+  const cooks = (await listCooks()).slice(0, 4);
+  const reviews = await recentReviews(4);
+  const posts = (await listPosts()).slice(0, 4);
 
   return (
     <>

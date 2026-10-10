@@ -45,8 +45,8 @@ export const getCurrentUser = cache(async () => {
     const { payload } = await jwtVerify(token, secret());
     const id = payload.sub;
     if (!id) return null;
-    const db = getDb();
-    const user = db.select().from(schema.users).where(eq(schema.users.id, id)).get();
+    const db = await getDb();
+    const user = await db.select().from(schema.users).where(eq(schema.users.id, id)).get();
     return user ?? null;
   } catch {
     return null;
@@ -56,8 +56,8 @@ export const getCurrentUser = cache(async () => {
 export const getCurrentCook = cache(async () => {
   const user = await getCurrentUser();
   if (!user) return null;
-  const db = getDb();
-  return db.select().from(schema.cooks).where(eq(schema.cooks.userId, user.id)).get() ?? null;
+  const db = await getDb();
+  return (await db.select().from(schema.cooks).where(eq(schema.cooks.userId, user.id)).get()) ?? null;
 });
 
 export async function requireUser() {

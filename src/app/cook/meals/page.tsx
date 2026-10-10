@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "My meals" };
 
 export default async function CookMealsPage() {
   const cook = await requireCook();
-  const full = getCookBySlug(cook.slug)!;
+  const full = (await getCookBySlug(cook.slug))!;
   return (
     <div>
       <div className="flex items-center justify-between">

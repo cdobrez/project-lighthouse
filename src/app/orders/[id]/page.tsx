@@ -20,11 +20,12 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
   const sp = await props.searchParams;
   const user = await getCurrentUser();
   if (!user) redirect(`/login?next=/orders/${id}`);
-  const order = getOrder(id);
+  const order = await getOrder(id);
   if (!order || order.userId !== user.id) notFound();
   const justPlaced = sp.placed === "1";
   const done = isFinal(order.fulfillment, order.status) && order.status !== "cancelled";
-  const issue = getIssueForOrder(order.id);
+  const issue = await getIssueForOrder(order.id);
+  const myReviews = done ? await Promise.all(order.items.map((it) => userHasReviewed(user.id, it.mealId))) : [];
 
   return (
     <Section className="py-10">
@@ -82,8 +83,8 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
               <h2 className="text-xl font-bold">How was it?</h2>
               <p className="mb-3 text-sm text-ink-soft">Your rating helps neighbors choose and helps {order.cook.displayName} get better.</p>
               <div className="grid gap-4 md:grid-cols-2">
-                {order.items.map((it) => {
-                  const mine = userHasReviewed(user.id, it.mealId);
+                {order.items.map((it, idx) => {
+                  const mine = myReviews[idx];
                   return (
                     <div key={it.id}>
                       <p className="mb-1 text-sm font-bold">{it.title}</p>

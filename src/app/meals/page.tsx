@@ -32,9 +32,9 @@ export default async function MealsPage(props: PageProps<"/meals">) {
     day: pick("day"),
     sort: sortRaw && SORTS.has(sortRaw) ? (sortRaw as Filters["sort"]) : "popular",
   };
-  const meals = listMeals(filters);
-  const cuisines = listCuisines();
-  const weekPool = listMeals({ ...filters, day: undefined });
+  const meals = await listMeals(filters);
+  const cuisines = await listCuisines();
+  const weekPool = await listMeals({ ...filters, day: undefined });
   const counts = Object.fromEntries(DAY_ORDER.map((d) => [d, weekPool.filter((m) => m.availableDays.includes(d)).length]));
   const baseParams = new URLSearchParams(
     Object.entries(sp).flatMap(([k, v]) => (typeof v === "string" && v && k !== "day" ? [[k, v]] : []))

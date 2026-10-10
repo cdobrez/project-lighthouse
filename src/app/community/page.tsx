@@ -19,7 +19,7 @@ export default async function CommunityPage(props: PageProps<"/community">) {
   const sp = await props.searchParams;
   const neighborhood = typeof sp.neighborhood === "string" ? sp.neighborhood : undefined;
   const kind = typeof sp.kind === "string" ? sp.kind : undefined;
-  const [user, posts] = [await getCurrentUser(), listPosts(neighborhood, kind && kind in KIND_LABEL ? kind : undefined)];
+  const [user, posts] = await Promise.all([getCurrentUser(), listPosts(neighborhood, kind && kind in KIND_LABEL ? kind : undefined)]);
 
   return (
     <>

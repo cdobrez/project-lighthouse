@@ -15,13 +15,13 @@ const KIND_LABEL: Record<string, string> = { post: "Story", recipe: "Recipe tip"
 
 export async function generateMetadata(props: PageProps<"/community/[id]">): Promise<Metadata> {
   const { id } = await props.params;
-  const post = getPost(id);
+  const post = await getPost(id);
   return { title: post?.title ?? "Post" };
 }
 
 export default async function PostPage(props: PageProps<"/community/[id]">) {
   const { id } = await props.params;
-  const post = getPost(id);
+  const post = await getPost(id);
   if (!post) notFound();
   const user = await getCurrentUser();
   return (

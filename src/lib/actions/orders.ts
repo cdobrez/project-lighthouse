@@ -37,9 +37,9 @@ export async function placeOrder(raw: PlaceOrderInput): Promise<PlaceOrderResult
   const parsed = inputSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, error: "Something in the order didn't look right. Check your basket and try again." };
   const input = parsed.data;
-  const db = getDb();
+  const db = await getDb();
 
-  const mealRows = db
+  const mealRows = await db
     .select()
     .from(schema.meals)
     .where(inArray(schema.meals.id, input.items.map((i) => i.mealId)))
@@ -67,8 +67,8 @@ export async function placeOrder(raw: PlaceOrderInput): Promise<PlaceOrderResult
   const total = subtotal + fee + delivery + input.tipCents;
   const orderId = newId("ord");
 
-  db.transaction((tx) => {
-    tx.insert(schema.orders)
+  await db.transaction(async (tx) => {
+    await tx.insert(schema.orders)
       .values({
         id: orderId,
         userId: user.id,
@@ -88,10 +88,10 @@ export async function placeOrder(raw: PlaceOrderInput): Promise<PlaceOrderResult
       .run();
     for (const item of input.items) {
       const meal = mealRows.find((m) => m.id === item.mealId)!;
-      tx.insert(schema.orderItems)
+      await tx.insert(schema.orderItems)
         .values({ id: newId("oi"), orderId, mealId: meal.id, title: meal.title, qty: item.qty, unitCents: meal.priceCents })
         .run();
-      tx.update(schema.meals)
+      await tx.update(schema.meals)
         .set({ portionsAvailable: meal.portionsAvailable - item.qty, timesOrdered: meal.timesOrdered + item.qty })
         .where(eq(schema.meals.id, meal.id))
         .run();
@@ -107,18 +107,18 @@ export async function placeOrder(raw: PlaceOrderInput): Promise<PlaceOrderResult
 export async function advanceOrder(orderId: string, nextStatus: string): Promise<{ ok: boolean; error?: string }> {
   const cook = await getCurrentCook();
   if (!cook) return { ok: false, error: "Only the cook can update this order." };
-  const db = getDb();
-  const order = db.select().from(schema.orders).where(and(eq(schema.orders.id, orderId), eq(schema.orders.cookId, cook.id))).get();
+  const db = await getDb();
+  const order = await db.select().from(schema.orders).where(and(eq(schema.orders.id, orderId), eq(schema.orders.cookId, cook.id))).get();
   if (!order) return { ok: false, error: "Order not found." };
   const flow = ORDER_FLOW[order.fulfillment] ?? ORDER_FLOW.pickup;
   const allowed = [...flow, "cancelled"];
   if (!allowed.includes(nextStatus)) return { ok: false, error: "Invalid status." };
   const final = flow[flow.length - 1];
-  db.update(schema.orders).set({ status: nextStatus, updatedAt: new Date().toISOString() }).where(eq(schema.orders.id, orderId)).run();
+  await db.update(schema.orders).set({ status: nextStatus, updatedAt: new Date().toISOString() }).where(eq(schema.orders.id, orderId)).run();
   if (nextStatus === final) {
-    const items = db.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)).all();
+    const items = await db.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)).all();
     const served = items.reduce((a, i) => a + i.qty, 0);
-    db.update(schema.cooks).set({ mealsServed: cook.mealsServed + served }).where(eq(schema.cooks.id, cook.id)).run();
+    await db.update(schema.cooks).set({ mealsServed: cook.mealsServed + served }).where(eq(schema.cooks.id, cook.id)).run();
   }
   revalidatePath("/cook");
   revalidatePath("/orders");
@@ -129,14 +129,14 @@ export async function advanceOrder(orderId: string, nextStatus: string): Promise
 export async function cancelMyOrder(orderId: string) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  const db = getDb();
-  const order = db.select().from(schema.orders).where(and(eq(schema.orders.id, orderId), eq(schema.orders.userId, user.id))).get();
+  const db = await getDb();
+  const order = await db.select().from(schema.orders).where(and(eq(schema.orders.id, orderId), eq(schema.orders.userId, user.id))).get();
   if (!order || !["placed", "accepted"].includes(order.status)) return { ok: false, error: "This order can't be cancelled anymore." };
-  db.transaction((tx) => {
-    tx.update(schema.orders).set({ status: "cancelled", updatedAt: new Date().toISOString() }).where(eq(schema.orders.id, orderId)).run();
-    const items = tx.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)).all();
+  await db.transaction(async (tx) => {
+    await tx.update(schema.orders).set({ status: "cancelled", updatedAt: new Date().toISOString() }).where(eq(schema.orders.id, orderId)).run();
+    const items = await tx.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)).all();
     for (const it of items) {
-      const meal = tx.select().from(schema.meals).where(eq(schema.meals.id, it.mealId)).get();
+      const meal = await tx.select().from(schema.meals).where(eq(schema.meals.id, it.mealId)).get();
       if (meal) tx.update(schema.meals).set({ portionsAvailable: meal.portionsAvailable + it.qty }).where(eq(schema.meals.id, meal.id)).run();
     }
   });

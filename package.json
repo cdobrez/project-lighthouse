@@ -8,10 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "test:e2e": "node e2e/flow.mjs",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate && node scripts/bundle-migrations.mjs"
   },
   "dependencies": {
-    "better-sqlite3": "^13.0.3",
+    "@libsql/client": "^0.18.0",
     "drizzle-orm": "^0.45.4",
     "jose": "^6.2.12",
     "next": "16.4.0",
@@ -22,7 +22,6 @@
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
-    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

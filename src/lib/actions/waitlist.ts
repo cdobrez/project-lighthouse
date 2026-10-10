@@ -17,7 +17,7 @@ export async function joinWaitlist(_prev: FormState, formData: FormData): Promis
   const parsed = waitlistSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const d = parsed.data;
-  getDb()
+  (await getDb())
     .insert(schema.waitlist)
     .values({ id: newId("wl"), email: d.email, zip: d.zip, neighborhood: d.neighborhood, wantsToCook: d.wantsToCook === "on", note: d.note })
     .run();

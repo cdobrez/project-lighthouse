@@ -17,20 +17,20 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: PageProps<"/meals/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
-  const meal = getMealBySlug(slug);
+  const meal = await getMealBySlug(slug);
   if (!meal) return { title: "Meal not found" };
   return { title: `${meal.title} by ${meal.cook.displayName}`, description: meal.description };
 }
 
 export default async function MealPage(props: PageProps<"/meals/[slug]">) {
   const { slug } = await props.params;
-  const meal = getMealBySlug(slug);
+  const meal = await getMealBySlug(slug);
   if (!meal) notFound();
   const [user] = await Promise.all([getCurrentUser()]);
-  const reviews = listReviewsForMeal(meal.id);
-  const mine = user ? userHasReviewed(user.id, meal.id) : null;
-  const saved = user ? userFavorites(user.id).has(meal.id) : false;
-  const more = listMeals({}).filter((m) => m.cookId === meal.cookId && m.id !== meal.id).slice(0, 3);
+  const reviews = await listReviewsForMeal(meal.id);
+  const mine = user ? await userHasReviewed(user.id, meal.id) : null;
+  const saved = user ? (await userFavorites(user.id)).has(meal.id) : false;
+  const more = (await listMeals({})).filter((m) => m.cookId === meal.cookId && m.id !== meal.id).slice(0, 3);
 
   const jsonLd = {
     "@context": "https://schema.org",

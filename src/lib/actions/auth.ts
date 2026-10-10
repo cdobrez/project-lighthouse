@@ -24,11 +24,11 @@ export async function signup(_prev: FormState, formData: FormData): Promise<Form
   const parsed = signupSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const { name, email, password, neighborhood, zip, next } = parsed.data;
-  const db = getDb();
-  const existing = db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.email, email)).get();
+  const db = await getDb();
+  const existing = await db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.email, email)).get();
   if (existing) return { error: "There is already an account with that email. Try signing in." };
   const id = newId("usr");
-  db.insert(schema.users)
+  await db.insert(schema.users)
     .values({
       id,
       name,
@@ -53,8 +53,8 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
   const parsed = loginSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const { email, password, next } = parsed.data;
-  const db = getDb();
-  const user = db.select().from(schema.users).where(eq(schema.users.email, email)).get();
+  const db = await getDb();
+  const user = await db.select().from(schema.users).where(eq(schema.users.email, email)).get();
   if (!user || !verifyPassword(password, user.passwordHash)) {
     return { error: "That email and password don't match." };
   }
@@ -80,7 +80,7 @@ export async function updateProfile(_prev: FormState, formData: FormData): Promi
   if (!user) redirect("/login?next=/account");
   const parsed = profileSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
-  getDb().update(schema.users).set(parsed.data).where(eq(schema.users.id, user.id)).run();
+  (await getDb()).update(schema.users).set(parsed.data).where(eq(schema.users.id, user.id)).run();
   return { ok: true };
 }
 

@@ -20,7 +20,7 @@ Home-cooked meals from your neighbors. Busy households order real dinners from v
 
 - Next.js 16 (App Router, Server Actions, Turbopack) + React 19 + TypeScript
 - Tailwind CSS v4 with a warm custom palette (`src/app/globals.css`)
-- SQLite via `better-sqlite3` + Drizzle ORM (`src/lib/db`), migrations in `drizzle/`
+- SQLite-compatible libSQL via `@libsql/client` + Drizzle ORM (`src/lib/db`). Local dev uses a file; production uses a hosted Turso database. Migrations are generated into `drizzle/` and bundled into the server (`src/lib/db/migrations.ts`) so they run on any host.
 - Sessions: HS256 JWT in an httpOnly cookie (`jose`), scrypt password hashing
 - Validation with `zod`
 
@@ -46,14 +46,17 @@ Copy `.env.example` to `.env.local`.
 | Variable | Purpose |
 | --- | --- |
 | `SESSION_SECRET` | Required in production. Any long random string. |
-| `DATABASE_PATH` | SQLite file path (default `./data/gigkitchens.db`). Use `:memory:` for throwaway environments. |
+| `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` | Hosted database for production (the Turso integration on Vercel sets these automatically). |
+| `DATABASE_URL` (+ `DATABASE_AUTH_TOKEN`) | Any libSQL URL: `libsql://…`, `file:./data/gigkitchens.db`, or `:memory:`. Used when the Turso variables are absent. |
 | `SITE_URL` | Canonical URL for metadata (default `https://gigkitchens.com`). |
+
+With no database variables set, the app uses `./data/gigkitchens.db` when the disk is writable, otherwise an in-memory database that reseeds on every cold start (fine for previews, not for real orders).
 
 ## Deploying
 
-The app needs a Node host with a writable disk for SQLite (Railway, Render, Fly.io, a VPS, Docker). On a read-only filesystem it falls back to an in-memory database that reseeds on restart, which is fine for previews but not for real orders.
+**Vercel (gigkitchens.com).** The repo is linked to the Vercel project `gigkitchens`; every push to the `gigkitchens-site` branch deploys to production. For persistent data, add the free Turso integration from the Vercel Marketplace (Storage tab of the project → Create Database → Turso); it injects `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` and the app migrates and seeds itself on first request. Until then the site runs on an in-memory database.
 
-For a serverless host such as Vercel, swap the Drizzle driver to Postgres (Neon, Supabase, Vercel Postgres): change `drizzle.config.ts` to `dialect: "postgresql"`, replace `sqliteTable` with `pgTable` in `src/lib/db/schema.ts`, and open the connection in `src/lib/db/index.ts` with `drizzle-orm/node-postgres`. Queries and actions are driver-agnostic.
+**Docker / any Node host.** `docker build -t gigkitchens .` then run with a volume on `/app/data` (SQLite file) or with the Turso variables.
 
 ## Photos
 

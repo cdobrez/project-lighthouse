@@ -21,7 +21,7 @@ export async function createPost(_prev: FormState, formData: FormData): Promise<
   const parsed = postSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const d = parsed.data;
-  getDb()
+  (await getDb())
     .insert(schema.posts)
     .values({
       id: newId("post"),
@@ -43,7 +43,7 @@ export async function replyToPost(_prev: FormState, formData: FormData): Promise
   const postId = String(formData.get("postId") ?? "");
   const body = String(formData.get("body") ?? "").trim();
   if (!postId || body.length < 2) return { error: "Write a reply first." };
-  getDb().insert(schema.replies).values({ id: newId("rep"), postId, userId: user.id, body: body.slice(0, 1000) }).run();
+  (await getDb()).insert(schema.replies).values({ id: newId("rep"), postId, userId: user.id, body: body.slice(0, 1000) }).run();
   revalidatePath("/community");
   revalidatePath(`/community/${postId}`);
   return { ok: true };
@@ -52,10 +52,10 @@ export async function replyToPost(_prev: FormState, formData: FormData): Promise
 export async function likePost(postId: string) {
   const user = await getCurrentUser();
   if (!user) return { ok: false };
-  const db = getDb();
-  const post = db.select().from(schema.posts).where(eq(schema.posts.id, postId)).get();
+  const db = await getDb();
+  const post = await db.select().from(schema.posts).where(eq(schema.posts.id, postId)).get();
   if (!post) return { ok: false };
-  db.update(schema.posts).set({ likes: post.likes + 1 }).where(eq(schema.posts.id, postId)).run();
+  await db.update(schema.posts).set({ likes: post.likes + 1 }).where(eq(schema.posts.id, postId)).run();
   revalidatePath("/community");
   return { ok: true };
 }

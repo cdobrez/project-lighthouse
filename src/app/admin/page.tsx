@@ -16,7 +16,7 @@ export default async function AdminPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/admin");
   if (user.role !== "admin") redirect("/");
-  const { totals, recentOrders, issues, waitlist, cooks, byNeighborhood } = adminOverview();
+  const { totals, recentOrders, issues, waitlist, cooks, byNeighborhood } = await adminOverview();
 
   return (
     <Section className="py-10">

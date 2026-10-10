@@ -5,7 +5,7 @@ import { RatingStars } from "@/components/rating-stars";
 import { timeAgo } from "@/lib/format";
 import type { recentReviews, PostWithAuthor } from "@/lib/queries";
 
-type Review = ReturnType<typeof recentReviews>[number];
+type Review = Awaited<ReturnType<typeof recentReviews>>[number];
 
 const KIND_LABEL: Record<string, string> = { post: "Story", recipe: "Recipe tip", event: "Event", request: "Looking for" };
 

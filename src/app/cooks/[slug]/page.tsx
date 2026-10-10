@@ -13,15 +13,15 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: PageProps<"/cooks/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
-  const cook = getCookBySlug(slug);
+  const cook = await getCookBySlug(slug);
   return cook ? { title: cook.displayName, description: cook.tagline } : { title: "Cook not found" };
 }
 
 export default async function CookPage(props: PageProps<"/cooks/[slug]">) {
   const { slug } = await props.params;
-  const cook = getCookBySlug(slug);
+  const cook = await getCookBySlug(slug);
   if (!cook) notFound();
-  const reviews = listReviewsForCook(cook.id);
+  const reviews = await listReviewsForCook(cook.id);
   const activeMeals = cook.meals.filter((m) => m.status === "active").map((m) => ({ ...m, cook }));
 
   return (

@@ -30,9 +30,9 @@ export default async function NeighborhoodPage(props: PageProps<"/neighborhoods/
   const n = find(slug);
   if (!n) notFound();
   const idx = NEIGHBORHOODS.indexOf(n);
-  const cooks = listCooks(n.name);
-  const meals = listMeals({ neighborhood: n.name, sort: "popular" });
-  const posts = listPosts(n.name).slice(0, 5);
+  const cooks = await listCooks(n.name);
+  const meals = await listMeals({ neighborhood: n.name, sort: "popular" });
+  const posts = (await listPosts(n.name)).slice(0, 5);
 
   return (
     <>

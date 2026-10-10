@@ -55,10 +55,10 @@ export async function becomeCook(_prev: FormState, formData: FormData): Promise<
   const parsed = readCookForm(formData);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const d = parsed.data;
-  const db = getDb();
+  const db = await getDb();
   let slug = slugify(d.displayName) || `kitchen-${newId()}`;
-  if (db.select({ id: schema.cooks.id }).from(schema.cooks).where(eq(schema.cooks.slug, slug)).get()) slug = `${slug}-${newId().slice(0, 4).toLowerCase()}`;
-  db.insert(schema.cooks)
+  if (await db.select({ id: schema.cooks.id }).from(schema.cooks).where(eq(schema.cooks.slug, slug)).get()) slug = `${slug}-${newId().slice(0, 4).toLowerCase()}`;
+  await db.insert(schema.cooks)
     .values({
       id: newId("cook"),
       userId: user.id,
@@ -87,7 +87,7 @@ export async function updateCookProfile(_prev: FormState, formData: FormData): P
   const parsed = readCookForm(formData);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const d = parsed.data;
-  getDb()
+  (await getDb())
     .update(schema.cooks)
     .set({
       displayName: d.displayName,
@@ -152,10 +152,10 @@ export async function createMeal(_prev: FormState, formData: FormData): Promise<
   const parsed = readMealForm(formData);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const d = parsed.data;
-  const db = getDb();
+  const db = await getDb();
   let slug = slugify(d.title) || `meal-${newId()}`;
-  if (db.select({ id: schema.meals.id }).from(schema.meals).where(eq(schema.meals.slug, slug)).get()) slug = `${slug}-${newId().slice(0, 4).toLowerCase()}`;
-  db.insert(schema.meals)
+  if (await db.select({ id: schema.meals.id }).from(schema.meals).where(eq(schema.meals.slug, slug)).get()) slug = `${slug}-${newId().slice(0, 4).toLowerCase()}`;
+  await db.insert(schema.meals)
     .values({
       id: newId("meal"),
       cookId: cook.id,
@@ -184,13 +184,13 @@ export async function createMeal(_prev: FormState, formData: FormData): Promise<
 export async function updateMeal(mealId: string, _prev: FormState, formData: FormData): Promise<FormState> {
   const cook = await getCurrentCook();
   if (!cook) redirect("/become-a-cook");
-  const db = getDb();
-  const meal = db.select().from(schema.meals).where(and(eq(schema.meals.id, mealId), eq(schema.meals.cookId, cook.id))).get();
+  const db = await getDb();
+  const meal = await db.select().from(schema.meals).where(and(eq(schema.meals.id, mealId), eq(schema.meals.cookId, cook.id))).get();
   if (!meal) return { error: "Meal not found." };
   const parsed = readMealForm(formData);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const d = parsed.data;
-  db.update(schema.meals)
+  await db.update(schema.meals)
     .set({
       title: d.title,
       description: d.description,
@@ -218,10 +218,10 @@ export async function updateMeal(mealId: string, _prev: FormState, formData: For
 export async function toggleMealStatus(mealId: string) {
   const cook = await getCurrentCook();
   if (!cook) return { ok: false };
-  const db = getDb();
-  const meal = db.select().from(schema.meals).where(and(eq(schema.meals.id, mealId), eq(schema.meals.cookId, cook.id))).get();
+  const db = await getDb();
+  const meal = await db.select().from(schema.meals).where(and(eq(schema.meals.id, mealId), eq(schema.meals.cookId, cook.id))).get();
   if (!meal) return { ok: false };
-  db.update(schema.meals).set({ status: meal.status === "active" ? "paused" : "active" }).where(eq(schema.meals.id, mealId)).run();
+  await db.update(schema.meals).set({ status: meal.status === "active" ? "paused" : "active" }).where(eq(schema.meals.id, mealId)).run();
   revalidatePath("/meals");
   revalidatePath("/cook/meals");
   return { ok: true };

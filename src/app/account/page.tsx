@@ -16,8 +16,8 @@ export default async function AccountPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/account");
   const cook = await getCurrentCook();
-  const orders = listOrdersForUser(user.id);
-  const favorites = listFavoriteMeals(user.id);
+  const orders = await listOrdersForUser(user.id);
+  const favorites = await listFavoriteMeals(user.id);
 
   return (
     <Section className="py-10">
