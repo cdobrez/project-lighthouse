@@ -1,7 +1,29 @@
 import type { Db } from "./index";
 import * as s from "./schema";
-import { newId, slugify } from "@/lib/ids";
+import { slugify } from "@/lib/ids";
+import { createHash } from "node:crypto";
 import { hashPassword } from "@/lib/password";
+
+/**
+ * Seed data uses deterministic IDs and a seeded PRNG so every server instance
+ * (including several in-memory instances on serverless hosts) produces identical rows.
+ */
+const ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789";
+let counter = 0;
+function newId(prefix: string): string {
+  const digest = createHash("sha256").update(`gigkitchens-seed:${prefix}:${counter++}`).digest();
+  let raw = "";
+  for (let i = 0; i < 12; i++) raw += ALPHABET[digest[i] % ALPHABET.length];
+  return `${prefix}_${raw}`;
+}
+let prngState = 0x9e3779b9;
+function random(): number {
+  // mulberry32
+  prngState = (prngState + 0x6d2b79f5) | 0;
+  let t = Math.imul(prngState ^ (prngState >>> 15), 1 | prngState);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
 
 type SeedCook = {
   name: string;
@@ -438,6 +460,8 @@ const POSTS = [
 ];
 
 export async function seedIfEmpty(db: Db) {
+  counter = 0;
+  prngState = 0x9e3779b9;
   const existing = await db.select({ id: s.users.id }).from(s.users).limit(1).all();
   if (existing.length > 0) return;
 
@@ -457,7 +481,7 @@ export async function seedIfEmpty(db: Db) {
           role: "role" in c && c.role ? c.role : "customer",
           neighborhood: c.neighborhood,
           zip: c.zip,
-          address: `${100 + Math.floor(Math.random() * 800)} Elm St, ${c.neighborhood}`,
+          address: `${100 + Math.floor(random() * 800)} Elm St, ${c.neighborhood}`,
           avatarHue: c.hue,
         })
         .run();
@@ -476,7 +500,7 @@ export async function seedIfEmpty(db: Db) {
           passwordHash: password,
           neighborhood: c.neighborhood,
           zip: c.zip,
-          address: `${100 + Math.floor(Math.random() * 800)} Birch Ln, ${c.neighborhood}`,
+          address: `${100 + Math.floor(random() * 800)} Birch Ln, ${c.neighborhood}`,
           avatarHue: c.hue,
         })
         .run();
@@ -501,7 +525,7 @@ export async function seedIfEmpty(db: Db) {
           kitchenInspected: true,
           yearsCooking: c.years,
           imageKey: c.imageKey,
-          mealsServed: 120 + Math.floor(Math.random() * 600),
+          mealsServed: 120 + Math.floor(random() * 600),
         })
         .run();
 
@@ -527,7 +551,7 @@ export async function seedIfEmpty(db: Db) {
             readyWindow: m.window,
             portionsAvailable: m.portions,
             fulfillment: c.fulfillment,
-            timesOrdered: 20 + Math.floor(Math.random() * 200),
+            timesOrdered: 20 + Math.floor(random() * 200),
           })
           .run();
       }
@@ -539,10 +563,10 @@ export async function seedIfEmpty(db: Db) {
       .map(([, id]) => id);
     let line = 0;
     for (const { mealId, cookId } of allMealIds) {
-      const count = 3 + Math.floor(Math.random() * 4);
+      const count = 3 + Math.floor(random() * 4);
       let sum = 0;
       for (let i = 0; i < count; i++) {
-        const rating = Math.random() < 0.75 ? 5 : 4;
+        const rating = random() < 0.75 ? 5 : 4;
         sum += rating;
         await tx.insert(s.reviews)
           .values({
@@ -616,7 +640,7 @@ export async function seedIfEmpty(db: Db) {
           deliveryCents: delivery,
           tipCents: tip,
           totalCents: subtotal + fee + delivery + tip,
-          paymentRef: `demo_${newId()}`,
+          paymentRef: `demo_${newId("x")}`,
           createdAt: when,
           updatedAt: when,
         })
@@ -625,7 +649,7 @@ export async function seedIfEmpty(db: Db) {
     }
 
     for (const p of POSTS) {
-      const author = customerList[Math.floor(Math.random() * customerList.length)];
+      const author = customerList[Math.floor(random() * customerList.length)];
       await tx.insert(s.posts)
         .values({
           id: newId("post"),
@@ -635,7 +659,7 @@ export async function seedIfEmpty(db: Db) {
           title: p.title,
           body: p.body,
           eventAt: p.eventAt ?? null,
-          likes: 3 + Math.floor(Math.random() * 30),
+          likes: 3 + Math.floor(random() * 30),
         })
         .run();
     }
