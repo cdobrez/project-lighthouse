@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireCook } from "@/lib/auth";
-import { listOrdersForCook, listIssuesForCook, unreadForCook } from "@/lib/queries";
+import { listOrdersForCook, listIssuesForCook, unreadForCook, listStandingOrdersForCook } from "@/lib/queries";
 import { Avatar } from "@/components/avatar";
 import { OrderActions } from "@/components/cook/order-actions";
 import { money, timeAgo, FULFILLMENT_LABELS } from "@/lib/format";
@@ -16,6 +16,7 @@ export default async function CookOrdersPage(props: PageProps<"/cook">) {
   const orders = await listOrdersForCook(cook.id);
   const issues = await listIssuesForCook(cook.id);
   const unread = await unreadForCook(cook.id);
+  const standing = await listStandingOrdersForCook(cook.id);
   const open = orders.filter((o) => !isFinal(o.fulfillment, o.status) && o.status !== "pending_payment");
   const done = orders.filter((o) => isFinal(o.fulfillment, o.status) && o.status !== "pending_payment");
   const earned = done.filter((o) => o.status !== "cancelled").reduce((a, o) => a + Math.round(o.subtotalCents * COOK_SHARE) + o.tipCents, 0);
@@ -106,6 +107,23 @@ export default async function CookOrdersPage(props: PageProps<"/cook">) {
             </li>
           ))}
         </ul>
+      )}
+
+      {standing.length > 0 && (
+        <>
+          <h2 className="mt-10 text-xl font-bold">Weekly standing orders</h2>
+          <p className="text-sm text-ink-soft">Placed automatically each morning on the day. Plan your portions around these.</p>
+          <ul className="card mt-3 divide-y divide-line">
+            {standing.map((s) => (
+              <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 p-3 text-sm">
+                <span>
+                  <span className="font-bold">{s.customer.name}</span> · {s.qty}× {s.meal.title} · every <span className="font-bold">{s.day}</span> · {FULFILLMENT_LABELS[s.fulfillment]?.short}
+                </span>
+                <span className="text-ink-muted">{s.customer.neighborhood}</span>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
 
       {done.length > 0 && (

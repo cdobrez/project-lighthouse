@@ -4,8 +4,9 @@ import { useState } from "react";
 import type { MealWithCook } from "@/lib/queries";
 import { money, FULFILLMENT_LABELS, nextAvailableDay } from "@/lib/format";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
+import { StandingOrderForm } from "@/components/subscriptions/standing-order-form";
 
-export function OrderPanel({ meal }: { meal: MealWithCook }) {
+export function OrderPanel({ meal, signedIn, defaultAddress }: { meal: MealWithCook; signedIn: boolean; defaultAddress?: string }) {
   const [qty, setQty] = useState(1);
   const soldOut = meal.portionsAvailable <= 0;
   const next = nextAvailableDay(meal.availableDays);
@@ -69,6 +70,20 @@ export function OrderPanel({ meal }: { meal: MealWithCook }) {
         <AddToCartButton meal={meal} qty={qty} disabled={soldOut} />
       </div>
       <p className="mt-3 text-center text-xs text-ink-muted">Pay at checkout. Cancel free until the cook starts cooking.</p>
+      {!soldOut && meal.availableDays.length > 0 && (
+        <div className="mt-4 border-t border-line pt-4">
+          <StandingOrderForm
+            mealId={meal.id}
+            mealTitle={meal.title}
+            days={meal.availableDays}
+            fulfillment={meal.fulfillment}
+            defaultQty={qty}
+            defaultAddress={defaultAddress}
+            signedIn={signedIn}
+            loginHref={`/login?next=/meals/${meal.slug}`}
+          />
+        </div>
+      )}
     </div>
   );
 }

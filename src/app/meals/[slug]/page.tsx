@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMealBySlug, listReviewsForMeal, listMeals, userHasReviewed, userFavorites } from "@/lib/queries";
 import { FavoriteButton } from "@/components/favorite-button";
+import { photoSrc } from "@/lib/images";
 import { getCurrentUser } from "@/lib/auth";
 import { Photo } from "@/components/photo";
 import { RatingStars } from "@/components/rating-stars";
@@ -19,7 +20,15 @@ export async function generateMetadata(props: PageProps<"/meals/[slug]">): Promi
   const { slug } = await props.params;
   const meal = await getMealBySlug(slug);
   if (!meal) return { title: "Meal not found" };
-  return { title: `${meal.title} by ${meal.cook.displayName}`, description: meal.description };
+  const base = process.env.SITE_URL ?? "https://gigkitchens.com";
+  const src = photoSrc(meal.imageKey);
+  const image = src ? (src.startsWith("/") ? `${base}${src}` : src) : undefined;
+  return {
+    title: `${meal.title} by ${meal.cook.displayName}`,
+    description: meal.description,
+    openGraph: { title: meal.title, description: meal.description, type: "website", url: `${base}/meals/${meal.slug}`, ...(image ? { images: [{ url: image }] } : {}) },
+    twitter: { card: "summary_large_image", title: meal.title, description: meal.description, ...(image ? { images: [image] } : {}) },
+  };
 }
 
 export default async function MealPage(props: PageProps<"/meals/[slug]">) {
@@ -164,7 +173,7 @@ export default async function MealPage(props: PageProps<"/meals/[slug]">) {
         </div>
 
         <aside>
-          <OrderPanel meal={meal} />
+          <OrderPanel meal={meal} signedIn={Boolean(user)} defaultAddress={user?.address} />
         </aside>
       </div>
 

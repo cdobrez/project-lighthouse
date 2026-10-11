@@ -7,6 +7,7 @@ import { getDb, schema } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { newId } from "@/lib/ids";
 import type { FormState } from "./auth";
+import { rateLimit } from "@/lib/rate-limit";
 
 const postSchema = z.object({
   kind: z.enum(["post", "recipe", "event", "request"]),
@@ -18,6 +19,8 @@ const postSchema = z.object({
 export async function createPost(_prev: FormState, formData: FormData): Promise<FormState> {
   const user = await getCurrentUser();
   if (!user) return { error: "Sign in to post to the neighborhood board." };
+  const limit = await rateLimit(`post:${user.id}`, 10, 60 * 60 * 1000);
+  if (!limit.ok) return { error: "Slow down a little. You can post again in a bit." };
   const parsed = postSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const d = parsed.data;

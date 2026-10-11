@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser, getCurrentCook } from "@/lib/auth";
-import { listOrdersForUser, listFavoriteMeals } from "@/lib/queries";
+import { listOrdersForUser, listFavoriteMeals, listStandingOrdersForUser } from "@/lib/queries";
+import { StandingOrderList } from "@/components/subscriptions/standing-order-list";
 import { Section } from "@/components/section";
 import { Avatar } from "@/components/avatar";
 import { ProfileForm } from "@/components/account/profile-form";
@@ -18,6 +19,7 @@ export default async function AccountPage() {
   const cook = await getCurrentCook();
   const orders = await listOrdersForUser(user.id);
   const favorites = await listFavoriteMeals(user.id);
+  const standing = await listStandingOrdersForUser(user.id);
 
   return (
     <Section className="py-10">
@@ -72,6 +74,12 @@ export default async function AccountPage() {
                 ))}
               </ul>
             )}
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold">Weekly orders</h2>
+            <div className="mt-3">
+              <StandingOrderList subs={standing} />
+            </div>
           </div>
           <div>
             <h2 className="text-2xl font-bold">Saved meals</h2>

@@ -190,6 +190,26 @@ export const messages = sqliteTable(
   (t) => [index("messages_order_idx").on(t.orderId)]
 );
 
+export const subscriptions = sqliteTable(
+  "subscriptions",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id),
+    cookId: text("cook_id").notNull().references(() => cooks.id),
+    mealId: text("meal_id").notNull().references(() => meals.id),
+    qty: integer("qty").notNull().default(1),
+    day: text("day").notNull(), // Mon..Sun
+    fulfillment: text("fulfillment").notNull(),
+    address: text("address").notNull().default(""),
+    tipPercent: integer("tip_percent").notNull().default(0),
+    note: text("note").notNull().default(""),
+    status: text("status").notNull().default("active"), // active | paused | cancelled
+    lastOrderedOn: text("last_ordered_on"),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (t) => [index("subscriptions_user_idx").on(t.userId), index("subscriptions_cook_idx").on(t.cookId), index("subscriptions_day_idx").on(t.day)]
+);
+
 export const waitlist = sqliteTable("waitlist", {
   id: text("id").primaryKey(),
   email: text("email").notNull(),
@@ -211,3 +231,4 @@ export type Reply = typeof replies.$inferSelect;
 export type Issue = typeof issues.$inferSelect;
 export type WaitlistEntry = typeof waitlist.$inferSelect;
 export type Message = typeof messages.$inferSelect;
+export type Subscription = typeof subscriptions.$inferSelect;

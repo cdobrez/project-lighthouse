@@ -8,13 +8,22 @@ import { Section } from "@/components/section";
 import { MealCard } from "@/components/meal-card";
 import { ReviewList } from "@/components/reviews/review-list";
 import { FULFILLMENT_LABELS } from "@/lib/format";
+import { photoSrc } from "@/lib/images";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: PageProps<"/cooks/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
   const cook = await getCookBySlug(slug);
-  return cook ? { title: cook.displayName, description: cook.tagline } : { title: "Cook not found" };
+  if (!cook) return { title: "Cook not found" };
+  const base = process.env.SITE_URL ?? "https://gigkitchens.com";
+  const src = photoSrc(cook.imageKey);
+  const image = src ? (src.startsWith("/") ? `${base}${src}` : src) : undefined;
+  return {
+    title: cook.displayName,
+    description: cook.tagline,
+    openGraph: { title: cook.displayName, description: cook.tagline, type: "profile", url: `${base}/cooks/${cook.slug}`, ...(image ? { images: [{ url: image }] } : {}) },
+  };
 }
 
 export default async function CookPage(props: PageProps<"/cooks/[slug]">) {

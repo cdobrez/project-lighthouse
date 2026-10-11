@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getDb, schema } from "@/lib/db";
 import { newId } from "@/lib/ids";
 import type { FormState } from "./auth";
+import { rateLimit } from "@/lib/rate-limit";
 
 const waitlistSchema = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email"),
@@ -14,6 +15,8 @@ const waitlistSchema = z.object({
 });
 
 export async function joinWaitlist(_prev: FormState, formData: FormData): Promise<FormState> {
+  const limit = await rateLimit("waitlist", 5, 60 * 60 * 1000);
+  if (!limit.ok) return { error: "You're on the list already. We'll be in touch." };
   const parsed = waitlistSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const d = parsed.data;

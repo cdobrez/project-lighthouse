@@ -49,5 +49,14 @@ export const MIGRATIONS: Migration[] = [
       "CREATE TABLE `messages` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`order_id` text NOT NULL,\n\t`sender_id` text NOT NULL,\n\t`body` text NOT NULL,\n\t`read_by_cook` integer DEFAULT false NOT NULL,\n\t`read_by_customer` integer DEFAULT false NOT NULL,\n\t`created_at` text DEFAULT (datetime('now')) NOT NULL,\n\tFOREIGN KEY (`order_id`) REFERENCES `orders`(`id`) ON UPDATE no action ON DELETE no action,\n\tFOREIGN KEY (`sender_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action\n);",
       "CREATE INDEX `messages_order_idx` ON `messages` (`order_id`);"
     ]
+  },
+  {
+    "name": "0004_subscriptions",
+    "statements": [
+      "CREATE TABLE `subscriptions` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`user_id` text NOT NULL,\n\t`cook_id` text NOT NULL,\n\t`meal_id` text NOT NULL,\n\t`qty` integer DEFAULT 1 NOT NULL,\n\t`day` text NOT NULL,\n\t`fulfillment` text NOT NULL,\n\t`address` text DEFAULT '' NOT NULL,\n\t`tip_percent` integer DEFAULT 0 NOT NULL,\n\t`note` text DEFAULT '' NOT NULL,\n\t`status` text DEFAULT 'active' NOT NULL,\n\t`last_ordered_on` text,\n\t`created_at` text DEFAULT (datetime('now')) NOT NULL,\n\tFOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action,\n\tFOREIGN KEY (`cook_id`) REFERENCES `cooks`(`id`) ON UPDATE no action ON DELETE no action,\n\tFOREIGN KEY (`meal_id`) REFERENCES `meals`(`id`) ON UPDATE no action ON DELETE no action\n);",
+      "CREATE INDEX `subscriptions_user_idx` ON `subscriptions` (`user_id`);",
+      "CREATE INDEX `subscriptions_cook_idx` ON `subscriptions` (`cook_id`);",
+      "CREATE INDEX `subscriptions_day_idx` ON `subscriptions` (`day`);"
+    ]
   }
 ];

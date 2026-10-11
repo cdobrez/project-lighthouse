@@ -9,6 +9,7 @@ import { hashPassword, verifyPassword } from "@/lib/password";
 import { newId } from "@/lib/ids";
 import { NEIGHBORHOODS } from "@/lib/neighborhoods";
 import { notifyWelcome } from "@/lib/notifications";
+import { rateLimit } from "@/lib/rate-limit";
 
 export type FormState = { error?: string; ok?: boolean } | undefined;
 
@@ -22,6 +23,8 @@ const signupSchema = z.object({
 });
 
 export async function signup(_prev: FormState, formData: FormData): Promise<FormState> {
+  const limit = await rateLimit("signup", 10, 60 * 60 * 1000);
+  if (!limit.ok) return { error: "Too many sign-ups from this connection. Try again in a bit." };
   const parsed = signupSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const { name, email, password, neighborhood, zip, next } = parsed.data;
@@ -52,6 +55,8 @@ const loginSchema = z.object({
 });
 
 export async function login(_prev: FormState, formData: FormData): Promise<FormState> {
+  const limit = await rateLimit("login", 20, 15 * 60 * 1000);
+  if (!limit.ok) return { error: `Too many attempts. Try again in ${Math.ceil(limit.retryAfterSec / 60)} minutes.` };
   const parsed = loginSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const { email, password, next } = parsed.data;

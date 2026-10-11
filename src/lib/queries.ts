@@ -389,3 +389,32 @@ export async function unreadForCustomer(userId: string): Promise<Map<string, num
     .all();
   return new Map(rows.map((r) => [r.orderId, Number(r.n)]));
 }
+
+export type SubscriptionFull = typeof schema.subscriptions.$inferSelect & { meal: Pick<Meal, "title" | "slug" | "imageKey" | "cuisine" | "priceCents" | "readyWindow">; cook: Pick<Cook, "displayName" | "slug">; customer: Pick<User, "name" | "avatarHue" | "neighborhood"> };
+
+async function hydrateSubscriptions(rows: (typeof schema.subscriptions.$inferSelect)[]): Promise<SubscriptionFull[]> {
+  if (!rows.length) return [];
+  const db = await getDb();
+  const meals = await db.select().from(schema.meals).where(inArray(schema.meals.id, [...new Set(rows.map((r) => r.mealId))])).all();
+  const cooks = await db.select().from(schema.cooks).where(inArray(schema.cooks.id, [...new Set(rows.map((r) => r.cookId))])).all();
+  const users = await db.select().from(schema.users).where(inArray(schema.users.id, [...new Set(rows.map((r) => r.userId))])).all();
+  return rows.flatMap((r) => {
+    const meal = meals.find((m) => m.id === r.mealId);
+    const cook = cooks.find((c) => c.id === r.cookId);
+    const u = users.find((u) => u.id === r.userId);
+    if (!meal || !cook || !u) return [];
+    return [{ ...r, meal: { title: meal.title, slug: meal.slug, imageKey: meal.imageKey, cuisine: meal.cuisine, priceCents: meal.priceCents, readyWindow: meal.readyWindow }, cook: { displayName: cook.displayName, slug: cook.slug }, customer: { name: u.name, avatarHue: u.avatarHue, neighborhood: u.neighborhood } }];
+  });
+}
+
+export async function listStandingOrdersForUser(userId: string): Promise<SubscriptionFull[]> {
+  const db = await getDb();
+  const rows = await db.select().from(schema.subscriptions).where(and(eq(schema.subscriptions.userId, userId), sql`${schema.subscriptions.status} != 'cancelled'`)).orderBy(desc(schema.subscriptions.createdAt)).all();
+  return hydrateSubscriptions(rows);
+}
+
+export async function listStandingOrdersForCook(cookId: string): Promise<SubscriptionFull[]> {
+  const db = await getDb();
+  const rows = await db.select().from(schema.subscriptions).where(and(eq(schema.subscriptions.cookId, cookId), eq(schema.subscriptions.status, "active"))).orderBy(schema.subscriptions.day).all();
+  return hydrateSubscriptions(rows);
+}

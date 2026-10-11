@@ -14,6 +14,8 @@ import { STATUS_LABELS, isFinal, isPending } from "@/lib/order-status";
 import { verifyCheckoutSession } from "@/lib/actions/orders";
 import { PayNowButton } from "@/components/orders/pay-now-button";
 import { OrderThread } from "@/components/messages/order-thread";
+import { StandingOrderForm } from "@/components/subscriptions/standing-order-form";
+import { getMealsByIds } from "@/lib/queries";
 import { listMessages } from "@/lib/queries";
 import { markThreadRead } from "@/lib/actions/messages";
 
@@ -37,6 +39,7 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
   await markThreadRead(order.id);
   const messages = order.status === "cancelled" ? [] : await listMessages(order.id);
   const myReviews = done ? await Promise.all(order.items.map((it) => userHasReviewed(user.id, it.mealId))) : [];
+  const orderMeals = done ? await getMealsByIds(order.items.map((it) => it.mealId)) : [];
 
   return (
     <Section className="py-10">
@@ -102,6 +105,31 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
 
           {!pending && order.status !== "cancelled" && (
             <OrderThread orderId={order.id} messages={messages} meId={user.id} otherName={order.cook.displayName} placeholder="e.g. Can you leave it by the side door?" />
+          )}
+
+          {done && orderMeals.filter((m) => m.status === "active" && m.availableDays.length).length > 0 && (
+            <div className="card p-5">
+              <h2 className="text-xl font-bold">Loved it? Make it a weekly thing.</h2>
+              <p className="mb-3 text-sm text-ink-soft">Same dish, same night, placed for you automatically. Pause whenever.</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {orderMeals
+                  .filter((m) => m.status === "active" && m.availableDays.length)
+                  .map((m) => (
+                    <StandingOrderForm
+                      key={m.id}
+                      mealId={m.id}
+                      mealTitle={m.title}
+                      days={m.availableDays}
+                      fulfillment={m.fulfillment}
+                      defaultQty={order.items.find((it) => it.mealId === m.id)?.qty ?? 1}
+                      defaultFulfillment={order.fulfillment}
+                      defaultAddress={order.address || user.address}
+                      signedIn
+                      loginHref="/login"
+                    />
+                  ))}
+              </div>
+            </div>
           )}
 
           {done && (

@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { storeImage } from "@/lib/uploads";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+  const limit = await rateLimit(`upload:${user.id}`, 40, 60 * 60 * 1000);
+  if (!limit.ok) return NextResponse.json({ error: "That's a lot of photos. Try again in a little while." }, { status: 429 });
   const form = await req.formData();
   const file = form.get("file");
   const kind = String(form.get("kind") ?? "meal");

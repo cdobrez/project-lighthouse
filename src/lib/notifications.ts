@@ -96,3 +96,19 @@ export async function notifyWelcome(email: string, name: string) {
     ),
   });
 }
+
+/** For standing orders when payments are on: the order is reserved and needs a quick payment. */
+export async function notifyPaymentNeeded(orderId: string) {
+  const ctx = await orderContext(orderId);
+  if (!ctx) return;
+  const { order, customer, cook, items } = ctx;
+  await sendEmail({
+    to: customer.email,
+    subject: `Your weekly ${items.map((i) => i.title).join(", ")} is reserved`,
+    html: emailLayout(
+      `${cook.displayName} has your standing order`,
+      `<p>${escape(order.scheduledFor)}. Tap below to pay ${money(order.totalCents)} and it goes on the stove.</p>${itemList(items)}`,
+      { href: `${siteUrl()}/orders/${order.id}`, label: "Pay now" }
+    ),
+  });
+}

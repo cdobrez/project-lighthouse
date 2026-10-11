@@ -38,6 +38,7 @@ Any other libSQL/Turso database works too: set `DATABASE_URL` and `DATABASE_AUTH
 | --- | --- | --- |
 | Photo uploads | `BLOB_READ_WRITE_TOKEN` | Already set: the `gigkitchens-photos` Blob store is connected to the project. |
 | Real payments | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe dashboard → Developers → API keys; then add a webhook endpoint `https://gigkitchens.com/api/stripe/webhook` for `checkout.session.completed` and copy its signing secret. |
+| Standing orders cron | `CRON_SECRET` | Already set. Vercel Cron calls `/api/cron/standing-orders` daily at 14:00 UTC (see `vercel.json`). |
 | Email | `RESEND_API_KEY`, `EMAIL_FROM` | resend.com → verify the gigkitchens.com domain (two DNS records at GoDaddy) → API key. `EMAIL_FROM` like `Gig Kitchens <orders@gigkitchens.com>`. |
 
 Redeploy after adding variables. Nothing breaks when they are absent: uploads fall back to local disk (or a library photo), checkout runs in demo mode, and emails are logged instead of sent.
