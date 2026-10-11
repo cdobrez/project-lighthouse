@@ -23,13 +23,15 @@ The domain's nameservers are GoDaddy's (`ns35/ns36.domaincontrol.com`). In GoDad
 
 Delete the existing `@` A records (`76.223.105.230`, `13.248.243.5`, GoDaddy's parking/website-builder IPs) and any existing `www` record. Vercel issues the TLS certificate automatically once the records resolve, usually within an hour.
 
-## Persistent database (one-time, about three clicks)
+## Database
 
-Until a database is attached the site runs on an in-memory copy of the seed data: browsing, demo logins and demo orders work, but real sign-ups and orders disappear when an instance recycles.
+**Today (snapshot mode).** With no database attached, the site keeps its SQLite file in the project's Blob store: encrypted with a key derived from `SESSION_SECRET`, restored on every cold start, and written back after every change (each instance also checks for a newer snapshot every few seconds). Sign-ups, orders, messages and photos persist. The one limit: if two server instances write within the same second, the later upload wins, so this is right for a pilot, not for heavy traffic.
+
+**Recommended upgrade (one-time, about three clicks).** A hosted libSQL database removes that limit entirely and the app switches over automatically when the variables appear:
 
 1. Open the Vercel project → **Storage** tab → **Create Database** → choose **Turso** (free plan, no card).
 2. Connect it to the `gigkitchens` project for Production and Preview.
-3. Redeploy (Deployments → ⋯ → Redeploy). The integration injects `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`; the app runs its migrations and seeds the demo data on the first request.
+3. Redeploy (Deployments → ⋯ → Redeploy). The integration injects `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`; the app runs its migrations and seeds the demo data on the first request. (Data from snapshot mode does not carry over automatically; ask for a migration if you have real orders by then.)
 
 Any other libSQL/Turso database works too: set `DATABASE_URL` and `DATABASE_AUTH_TOKEN` instead.
 
@@ -47,5 +49,5 @@ Redeploy after adding variables. Nothing breaks when they are absent: uploads fa
 ## Checking on it
 
 - Build and runtime logs: Vercel project → Deployments / Logs.
-- A `[gigkitchens] No database configured` warning in the runtime logs means the Turso variables are missing.
+- `[gigkitchens] restored database snapshot from …` in the runtime logs means snapshot mode is active; `snapshot save failed` means writes are not persisting and needs attention.
 - Run `npm run test:e2e` locally against `npm run dev` after changes.

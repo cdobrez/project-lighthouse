@@ -53,7 +53,7 @@ Copy `.env.example` to `.env.local`.
 | `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` | Turns on real payments via Stripe Checkout. Without them checkout is a demo. |
 | `RESEND_API_KEY` (+ `EMAIL_FROM`) | Order and welcome emails via Resend. Without it emails are skipped and logged. |
 
-With no database variables set, the app uses `./data/gigkitchens.db` when the disk is writable, otherwise an in-memory database that reseeds on every cold start (fine for previews, not for real orders).
+With no database variables set, the app uses `./data/gigkitchens.db` when the disk is writable. On Vercel (read-only disk) it runs in snapshot mode: the SQLite file is stored encrypted in Vercel Blob and written back after every change, so data persists across cold starts. With neither available it falls back to an in-memory database.
 
 ## Deploying
 
