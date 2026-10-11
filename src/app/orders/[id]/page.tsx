@@ -13,6 +13,9 @@ import { money, FULFILLMENT_LABELS } from "@/lib/format";
 import { STATUS_LABELS, isFinal, isPending } from "@/lib/order-status";
 import { verifyCheckoutSession } from "@/lib/actions/orders";
 import { PayNowButton } from "@/components/orders/pay-now-button";
+import { OrderThread } from "@/components/messages/order-thread";
+import { listMessages } from "@/lib/queries";
+import { markThreadRead } from "@/lib/actions/messages";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Order details" };
@@ -31,6 +34,8 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
   const pending = isPending(order.status);
   const done = isFinal(order.fulfillment, order.status) && order.status !== "cancelled";
   const issue = await getIssueForOrder(order.id);
+  await markThreadRead(order.id);
+  const messages = order.status === "cancelled" ? [] : await listMessages(order.id);
   const myReviews = done ? await Promise.all(order.items.map((it) => userHasReviewed(user.id, it.mealId))) : [];
 
   return (
@@ -94,6 +99,10 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
               </div>
             ))}
           </div>
+
+          {!pending && order.status !== "cancelled" && (
+            <OrderThread orderId={order.id} messages={messages} meId={user.id} otherName={order.cook.displayName} placeholder="e.g. Can you leave it by the side door?" />
+          )}
 
           {done && (
             <div>

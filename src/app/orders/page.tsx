@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { listOrdersForUser } from "@/lib/queries";
+import { listOrdersForUser, unreadForCustomer } from "@/lib/queries";
 import { Section } from "@/components/section";
 import { Photo } from "@/components/photo";
 import { money, timeAgo } from "@/lib/format";
@@ -15,6 +15,7 @@ export default async function OrdersPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/orders");
   const orders = await listOrdersForUser(user.id);
+  const unread = await unreadForCustomer(user.id);
   const active = orders.filter((o) => !isFinal(o.fulfillment, o.status));
   const past = orders.filter((o) => isFinal(o.fulfillment, o.status));
 
@@ -36,20 +37,20 @@ export default async function OrdersPage() {
       {active.length > 0 && (
         <>
           <h2 className="mt-8 text-xl font-bold">In progress</h2>
-          <OrderList orders={active} />
+          <OrderList orders={active} unread={unread} />
         </>
       )}
       {past.length > 0 && (
         <>
           <h2 className="mt-10 text-xl font-bold">Past orders</h2>
-          <OrderList orders={past} />
+          <OrderList orders={past} unread={unread} />
         </>
       )}
     </Section>
   );
 }
 
-function OrderList({ orders }: { orders: Awaited<ReturnType<typeof listOrdersForUser>> }) {
+function OrderList({ orders, unread }: { orders: Awaited<ReturnType<typeof listOrdersForUser>>; unread: Map<string, number> }) {
   return (
     <ul className="mt-3 grid gap-4 md:grid-cols-2">
       {orders.map((o) => (
@@ -71,6 +72,7 @@ function OrderList({ orders }: { orders: Awaited<ReturnType<typeof listOrdersFor
                   {STATUS_LABELS[o.status] ?? o.status}
                 </span>
                 <span className="text-ink-muted">{timeAgo(o.createdAt)}</span>
+                {unread.get(o.id) ? <span className="chip bg-tomato text-white">{unread.get(o.id)} new</span> : null}
               </span>
             </span>
           </Link>

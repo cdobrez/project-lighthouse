@@ -42,5 +42,12 @@ export const MIGRATIONS: Migration[] = [
     "statements": [
       "CREATE TABLE `waitlist` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`email` text NOT NULL,\n\t`zip` text DEFAULT '' NOT NULL,\n\t`neighborhood` text DEFAULT '' NOT NULL,\n\t`wants_to_cook` integer DEFAULT false NOT NULL,\n\t`note` text DEFAULT '' NOT NULL,\n\t`created_at` text DEFAULT (datetime('now')) NOT NULL\n);"
     ]
+  },
+  {
+    "name": "0003_messages",
+    "statements": [
+      "CREATE TABLE `messages` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`order_id` text NOT NULL,\n\t`sender_id` text NOT NULL,\n\t`body` text NOT NULL,\n\t`read_by_cook` integer DEFAULT false NOT NULL,\n\t`read_by_customer` integer DEFAULT false NOT NULL,\n\t`created_at` text DEFAULT (datetime('now')) NOT NULL,\n\tFOREIGN KEY (`order_id`) REFERENCES `orders`(`id`) ON UPDATE no action ON DELETE no action,\n\tFOREIGN KEY (`sender_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action\n);",
+      "CREATE INDEX `messages_order_idx` ON `messages` (`order_id`);"
+    ]
   }
 ];

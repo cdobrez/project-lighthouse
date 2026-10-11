@@ -350,3 +350,42 @@ export async function adminOverview() {
     .all();
   return { totals, recentOrders, issues, waitlist: waitlistRows, cooks, byNeighborhood };
 }
+
+export type MessageWithSender = typeof schema.messages.$inferSelect & { sender: Pick<User, "name" | "avatarHue"> };
+
+export async function listMessages(orderId: string): Promise<MessageWithSender[]> {
+  const db = await getDb();
+  const rows = await db
+    .select({ message: schema.messages, name: schema.users.name, avatarHue: schema.users.avatarHue })
+    .from(schema.messages)
+    .innerJoin(schema.users, eq(schema.messages.senderId, schema.users.id))
+    .where(eq(schema.messages.orderId, orderId))
+    .orderBy(schema.messages.createdAt)
+    .all();
+  return rows.map((r) => ({ ...r.message, sender: { name: r.name, avatarHue: r.avatarHue } }));
+}
+
+/** Unread message counts per order for a cook's dashboard. */
+export async function unreadForCook(cookId: string): Promise<Map<string, number>> {
+  const db = await getDb();
+  const rows = await db
+    .select({ orderId: schema.messages.orderId, n: sql<number>`count(*)` })
+    .from(schema.messages)
+    .innerJoin(schema.orders, eq(schema.messages.orderId, schema.orders.id))
+    .where(and(eq(schema.orders.cookId, cookId), eq(schema.messages.readByCook, false)))
+    .groupBy(schema.messages.orderId)
+    .all();
+  return new Map(rows.map((r) => [r.orderId, Number(r.n)]));
+}
+
+export async function unreadForCustomer(userId: string): Promise<Map<string, number>> {
+  const db = await getDb();
+  const rows = await db
+    .select({ orderId: schema.messages.orderId, n: sql<number>`count(*)` })
+    .from(schema.messages)
+    .innerJoin(schema.orders, eq(schema.messages.orderId, schema.orders.id))
+    .where(and(eq(schema.orders.userId, userId), eq(schema.messages.readByCustomer, false)))
+    .groupBy(schema.messages.orderId)
+    .all();
+  return new Map(rows.map((r) => [r.orderId, Number(r.n)]));
+}

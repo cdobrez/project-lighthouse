@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireCook } from "@/lib/auth";
-import { listOrdersForCook, listIssuesForCook } from "@/lib/queries";
+import { listOrdersForCook, listIssuesForCook, unreadForCook } from "@/lib/queries";
 import { Avatar } from "@/components/avatar";
 import { OrderActions } from "@/components/cook/order-actions";
 import { money, timeAgo, FULFILLMENT_LABELS } from "@/lib/format";
@@ -15,6 +15,7 @@ export default async function CookOrdersPage(props: PageProps<"/cook">) {
   const cook = await requireCook();
   const orders = await listOrdersForCook(cook.id);
   const issues = await listIssuesForCook(cook.id);
+  const unread = await unreadForCook(cook.id);
   const open = orders.filter((o) => !isFinal(o.fulfillment, o.status) && o.status !== "pending_payment");
   const done = orders.filter((o) => isFinal(o.fulfillment, o.status) && o.status !== "pending_payment");
   const earned = done.filter((o) => o.status !== "cancelled").reduce((a, o) => a + Math.round(o.subtotalCents * COOK_SHARE) + o.tipCents, 0);
@@ -73,7 +74,10 @@ export default async function CookOrdersPage(props: PageProps<"/cook">) {
                     </p>
                   </div>
                 </div>
-                <span className="chip bg-butter-soft text-ink">{STATUS_LABELS[o.status]}</span>
+                <span className="flex items-center gap-2">
+                  {unread.get(o.id) ? <span className="chip bg-tomato text-white">{unread.get(o.id)} new message{unread.get(o.id) === 1 ? "" : "s"}</span> : null}
+                  <span className="chip bg-butter-soft text-ink">{STATUS_LABELS[o.status]}</span>
+                </span>
               </div>
               <ul className="mt-3 text-sm">
                 {o.items.map((it) => (
@@ -92,6 +96,10 @@ export default async function CookOrdersPage(props: PageProps<"/cook">) {
                 <p className="text-sm">
                   You earn <span className="font-bold">{money(Math.round(o.subtotalCents * COOK_SHARE) + o.tipCents)}</span>
                   {o.tipCents > 0 && <span className="text-ink-muted"> (incl. {money(o.tipCents)} tip)</span>}
+                  {" · "}
+                  <Link href={`/cook/orders/${o.id}`} className="font-bold text-tomato hover:underline">
+                    Details &amp; messages
+                  </Link>
                 </p>
                 <OrderActions orderId={o.id} fulfillment={o.fulfillment} status={o.status} />
               </div>
