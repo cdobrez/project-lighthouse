@@ -10,6 +10,7 @@ import { RatingStars } from "@/components/rating-stars";
 import { Section } from "@/components/section";
 import { MealCard } from "@/components/meal-card";
 import { OrderPanel } from "@/components/meals/order-panel";
+import { MobileBuyBar } from "@/components/meals/mobile-buy-bar";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { ReviewList } from "@/components/reviews/review-list";
 import { DAY_ORDER } from "@/lib/format";
@@ -53,7 +54,8 @@ export default async function MealPage(props: PageProps<"/meals/[slug]">) {
   };
 
   return (
-    <Section className="py-8">
+    <Section className="py-8 pb-28 lg:pb-8">
+      <MobileBuyBar meal={meal} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <nav className="mb-5 text-sm text-ink-muted" aria-label="Breadcrumb">
         <Link href="/meals" className="hover:text-tomato">

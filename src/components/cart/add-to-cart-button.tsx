@@ -44,7 +44,7 @@ export function AddToCartButton({ meal, compact = false, disabled = false, qty =
         type="button"
         onClick={handle}
         disabled={disabled}
-        className={`${compact ? "btn-secondary px-3.5" : "btn-primary w-full py-3 text-base"} ${state === "added" ? "!bg-sage !text-white" : ""}`}
+        className={`${compact ? "btn-secondary px-3.5" : "btn-primary w-full py-3 text-base"} px-3 ${state === "added" ? "!bg-sage !text-white" : ""}`}
         aria-live="polite"
       >
         {state === "added" ? (

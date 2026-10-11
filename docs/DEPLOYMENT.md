@@ -8,7 +8,8 @@
 | Hosting | Vercel project `gigkitchens` (team "Chris Dobrez"), auto-deploys on every push to `gigkitchens-site` |
 | Live URL | https://gigkitchens-chris-dobrez.vercel.app (and gigkitchens.com once DNS points at Vercel) |
 | Domains on the project | `gigkitchens.com` (primary), `www.gigkitchens.com` (308 redirect to apex) |
-| Env vars on Vercel | `SESSION_SECRET` (sensitive), `SITE_URL=https://gigkitchens.com` |
+| Env vars on Vercel | `SESSION_SECRET`, `CRON_SECRET` (sensitive), `SITE_URL=https://gigkitchens.com`, `BLOB_READ_WRITE_TOKEN` (from the Blob store) |
+| Deployment protection | Off (Vercel Authentication was disabled so the vercel.app URL is public) |
 
 ## DNS for gigkitchens.com (GoDaddy)
 
