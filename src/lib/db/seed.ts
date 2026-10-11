@@ -550,6 +550,7 @@ export async function seedIfEmpty(db: Db) {
             availableDays: m.days,
             readyWindow: m.window,
             portionsAvailable: m.portions,
+            portionsPerDay: m.portions,
             fulfillment: c.fulfillment,
             timesOrdered: 20 + Math.floor(random() * 200),
           })

@@ -85,6 +85,8 @@ npx drizzle-kit generate   # after changing the schema
 - **Payments**: with Stripe keys set, checkout redirects to Stripe Checkout, the order waits in `pending_payment`, and the webhook (or the success page as a fallback) marks it placed. Cooks only see paid orders.
 - **Email**: order confirmations to neighbor and cook, status updates as the cook moves the order along, a welcome email on sign-up, and a ping when the other side of an order sends a message.
 - **Weekly standing orders**: "Make it weekly" on any meal or delivered order places the same order automatically every week (daily cron at 9am Central via `vercel.json`, protected by `CRON_SECRET`). Neighbors pause or cancel from their account; cooks see upcoming standing orders on their dashboard.
+- **Daily batches**: each meal has a portions-per-day cap that resets every morning with the daily job, so cooks never need to top up counts by hand.
+- **Reorder and earnings**: one tap re-orders a past dinner; cooks get a weekly earnings table and best-seller list.
 - **Messages**: every order has a private thread between the neighbor and the cook (gate codes, "running five minutes late"), with unread badges on both dashboards.
 
 ## Roadmap ideas

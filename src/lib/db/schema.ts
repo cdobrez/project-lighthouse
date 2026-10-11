@@ -62,6 +62,7 @@ export const meals = sqliteTable(
     availableDays: text("available_days", { mode: "json" }).$type<string[]>().notNull().default([]),
     readyWindow: text("ready_window").notNull().default("5:00 - 7:00 pm"),
     portionsAvailable: integer("portions_available").notNull().default(10),
+    portionsPerDay: integer("portions_per_day").notNull().default(10),
     fulfillment: text("fulfillment", { mode: "json" }).$type<string[]>().notNull().default(["pickup"]),
     status: text("status").notNull().default("active"), // active | paused
     ratingAvg: real("rating_avg").notNull().default(0),

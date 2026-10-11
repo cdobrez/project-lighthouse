@@ -58,5 +58,11 @@ export const MIGRATIONS: Migration[] = [
       "CREATE INDEX `subscriptions_cook_idx` ON `subscriptions` (`cook_id`);",
       "CREATE INDEX `subscriptions_day_idx` ON `subscriptions` (`day`);"
     ]
+  },
+  {
+    "name": "0005_portions_per_day",
+    "statements": [
+      "ALTER TABLE `meals` ADD `portions_per_day` integer DEFAULT 10 NOT NULL;"
+    ]
   }
 ];

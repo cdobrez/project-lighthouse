@@ -96,7 +96,7 @@ export function MealForm({ meal, cookFulfillment }: { meal?: Meal | null; cookFu
         </div>
         <div>
           <label className="label" htmlFor="portionsAvailable">
-            Portions per cooking day
+            Portions per cooking day (resets each morning)
           </label>
           <input id="portionsAvailable" name="portionsAvailable" type="number" min={0} max={200} className="input" defaultValue={meal?.portionsAvailable ?? 10} />
         </div>

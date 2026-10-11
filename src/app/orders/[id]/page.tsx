@@ -15,6 +15,7 @@ import { verifyCheckoutSession } from "@/lib/actions/orders";
 import { PayNowButton } from "@/components/orders/pay-now-button";
 import { OrderThread } from "@/components/messages/order-thread";
 import { StandingOrderForm } from "@/components/subscriptions/standing-order-form";
+import { ReorderButton } from "@/components/orders/reorder-button";
 import { getMealsByIds } from "@/lib/queries";
 import { listMessages } from "@/lib/queries";
 import { markThreadRead } from "@/lib/actions/messages";
@@ -39,7 +40,22 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
   await markThreadRead(order.id);
   const messages = order.status === "cancelled" ? [] : await listMessages(order.id);
   const myReviews = done ? await Promise.all(order.items.map((it) => userHasReviewed(user.id, it.mealId))) : [];
-  const orderMeals = done ? await getMealsByIds(order.items.map((it) => it.mealId)) : [];
+  const orderMeals = await getMealsByIds(order.items.map((it) => it.mealId));
+  const reorderLines = order.items.map((it) => {
+    const m = orderMeals.find((x) => x.id === it.mealId);
+    return {
+      mealId: it.mealId,
+      slug: it.mealSlug,
+      title: it.title,
+      unitCents: m?.priceCents ?? it.unitCents,
+      qty: it.qty,
+      imageKey: it.imageKey,
+      cuisine: it.cuisine,
+      fulfillment: m?.fulfillment ?? [],
+      readyWindow: m?.readyWindow ?? "",
+      available: Boolean(m && m.status === "active" && m.portionsAvailable >= it.qty),
+    };
+  });
 
   return (
     <Section className="py-10">
@@ -75,7 +91,10 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
             {FULFILLMENT_LABELS[order.fulfillment]?.label} · {order.scheduledFor}
           </p>
         </div>
-        {["pending_payment", "placed", "accepted"].includes(order.status) && <CancelOrderButton orderId={order.id} />}
+        <div className="flex flex-wrap gap-2">
+          {(done || order.status === "cancelled") && <ReorderButton lines={reorderLines} cook={{ id: order.cook.id, name: order.cook.displayName, slug: order.cook.slug }} />}
+          {["pending_payment", "placed", "accepted"].includes(order.status) && <CancelOrderButton orderId={order.id} />}
+        </div>
       </div>
 
       <div className="card mt-6 p-5">

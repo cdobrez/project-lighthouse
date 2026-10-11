@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { getDb, schema } from "@/lib/db";
 import { newId } from "@/lib/ids";
 import { DAY_ORDER } from "@/lib/format";
@@ -11,10 +11,17 @@ import { notifyOrderPlaced, notifyPaymentNeeded } from "@/lib/notifications";
  * Turns today's active standing orders into real orders. Runs once a day from
  * Vercel Cron (see vercel.json) or `GET /api/cron/standing-orders` with the CRON_SECRET.
  */
-export async function runStandingOrders(now = new Date()): Promise<{ created: string[]; skipped: { id: string; reason: string }[] }> {
+export async function runStandingOrders(now = new Date()): Promise<{ created: string[]; skipped: { id: string; reason: string }[]; portionsReset: number }> {
   const db = await getDb();
   const today = now.toISOString().slice(0, 10);
   const day = DAY_ORDER[(now.getUTCDay() + 6) % 7];
+  // A new cooking day: every meal starts with its full batch again.
+  const resetResult = await db
+    .update(schema.meals)
+    .set({ portionsAvailable: sql`${schema.meals.portionsPerDay}` })
+    .where(sql`${schema.meals.portionsAvailable} != ${schema.meals.portionsPerDay}`)
+    .run();
+  const portionsReset = Number(resetResult.rowsAffected ?? 0);
   const subs = await db.select().from(schema.subscriptions).where(and(eq(schema.subscriptions.status, "active"), eq(schema.subscriptions.day, day))).all();
   const created: string[] = [];
   const skipped: { id: string; reason: string }[] = [];
@@ -71,5 +78,5 @@ export async function runStandingOrders(now = new Date()): Promise<{ created: st
     if (payLater) void notifyPaymentNeeded(orderId);
     else void notifyOrderPlaced(orderId);
   }
-  return { created, skipped };
+  return { created, skipped, portionsReset };
 }

@@ -176,6 +176,7 @@ export async function createMeal(_prev: FormState, formData: FormData): Promise<
       availableDays: d.availableDays,
       readyWindow: d.readyWindow,
       portionsAvailable: d.portionsAvailable,
+      portionsPerDay: d.portionsAvailable,
       fulfillment: d.fulfillment,
     })
     .run();
@@ -208,6 +209,7 @@ export async function updateMeal(mealId: string, _prev: FormState, formData: For
       availableDays: d.availableDays,
       readyWindow: d.readyWindow,
       portionsAvailable: d.portionsAvailable,
+      portionsPerDay: d.portionsAvailable,
       fulfillment: d.fulfillment,
     })
     .where(eq(schema.meals.id, mealId))

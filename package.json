@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:e2e": "node e2e/flow.mjs && node e2e/upload.mjs && node e2e/messages.mjs && node e2e/standing.mjs",
+    "test:e2e": "node e2e/flow.mjs && node e2e/upload.mjs && node e2e/messages.mjs && node e2e/standing.mjs && node e2e/extras.mjs",
     "db:generate": "drizzle-kit generate --name ${npm_config_name:-change} && node scripts/bundle-migrations.mjs"
   },
   "dependencies": {

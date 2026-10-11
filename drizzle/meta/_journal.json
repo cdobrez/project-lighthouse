@@ -36,6 +36,13 @@
       "when": 1791718136865,
       "tag": "0004_subscriptions",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1791718321616,
+      "tag": "0005_portions_per_day",
+      "breakpoints": true
     }
   ]
 }

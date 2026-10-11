@@ -1,0 +1,1 @@
+ALTER TABLE `meals` ADD `portions_per_day` integer DEFAULT 10 NOT NULL;
