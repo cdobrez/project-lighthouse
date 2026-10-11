@@ -15,7 +15,7 @@ const href = await p.locator("article h3 a").first().getAttribute("href");
 await p.goto(`${B}${href}`);
 const mealTitle = (await p.locator("h1").first().textContent()).trim();
 console.log("using", mealTitle);
-await p.click("button:has-text('Make it weekly')");
+await p.locator("aside button", { hasText: "Make it weekly" }).click();
 const dayOptions = await p.locator("select[name=day] option").allTextContents();
 const day = dayOptions.includes(today) ? today : dayOptions[0];
 await p.selectOption("select[name=day]", day);

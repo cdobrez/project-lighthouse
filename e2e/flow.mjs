@@ -31,13 +31,13 @@ try {
   // 2. Add two of a meal from the detail page
   await page.goto(`${BASE}/meals/nonnas-baked-lasagna`);
   await page.click('button[aria-label="Increase quantity"]');
-  await page.click("text=Add 2 to basket");
+  await page.locator("aside button", { hasText: "Add 2 to basket" }).click();
   await page.waitForSelector("text=Added");
   log("added lasagna x2");
 
   // 3. Try adding from a different cook -> should be refused
   await page.goto(`${BASE}/meals/beef-pho-kit`);
-  await page.click("text=Add to basket");
+  await page.locator("aside button", { hasText: "Add to basket" }).click();
   await page.waitForSelector("text=One cook per order");
   log("cross-cook add refused as designed");
 
