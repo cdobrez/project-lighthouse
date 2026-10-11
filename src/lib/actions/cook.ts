@@ -29,6 +29,7 @@ const cookSchema = z.object({
   fulfillment: z.array(z.string()).min(1, "Pick at least one way to hand off meals"),
   deliveryRadiusMiles: z.coerce.number().min(0.5).max(25).default(3),
   foodHandlerCertified: z.boolean().default(false),
+  imageKey: z.string().trim().max(500).default(""),
 });
 
 function readCookForm(formData: FormData) {
@@ -44,6 +45,7 @@ function readCookForm(formData: FormData) {
     fulfillment: formData.getAll("fulfillment").map(String),
     deliveryRadiusMiles: formData.get("deliveryRadiusMiles") ?? 3,
     foodHandlerCertified: formData.get("foodHandlerCertified") === "on",
+    imageKey: formData.get("imageKey") ?? "",
   });
 }
 
@@ -74,7 +76,7 @@ export async function becomeCook(_prev: FormState, formData: FormData): Promise<
       deliveryRadiusMiles: d.deliveryRadiusMiles,
       foodHandlerCertified: d.foodHandlerCertified,
       yearsCooking: d.yearsCooking,
-      imageKey: "cook-default",
+      imageKey: d.imageKey || "cook-default",
     })
     .run();
   revalidatePath("/cooks");
@@ -101,6 +103,7 @@ export async function updateCookProfile(_prev: FormState, formData: FormData): P
       deliveryRadiusMiles: d.deliveryRadiusMiles,
       foodHandlerCertified: d.foodHandlerCertified,
       yearsCooking: d.yearsCooking,
+      imageKey: d.imageKey || "cook-default",
     })
     .where(eq(schema.cooks.id, cook.id))
     .run();
@@ -124,7 +127,7 @@ const mealSchema = z.object({
   readyWindow: z.string().trim().min(3, "Add a ready window").max(40),
   portionsAvailable: z.coerce.number().int().min(0).max(200).default(10),
   fulfillment: z.array(z.string()).min(1, "Pick at least one hand-off option"),
-  imageKey: z.string().trim().max(80).default("meal-default"),
+  imageKey: z.string().trim().max(500).default("meal-default"),
 });
 
 function readMealForm(formData: FormData) {

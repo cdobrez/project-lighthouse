@@ -67,7 +67,7 @@ function OrderList({ orders }: { orders: Awaited<ReturnType<typeof listOrdersFor
                 {o.cook.displayName} · {o.scheduledFor}
               </span>
               <span className="mt-2 flex items-center gap-2 text-xs">
-                <span className={`chip ${o.status === "cancelled" ? "" : isFinal(o.fulfillment, o.status) ? "bg-sage-soft text-sage" : "bg-butter-soft text-ink"}`}>
+                <span className={`chip ${o.status === "cancelled" ? "" : o.status === "pending_payment" ? "bg-tomato-soft text-tomato-deep" : isFinal(o.fulfillment, o.status) ? "bg-sage-soft text-sage" : "bg-butter-soft text-ink"}`}>
                   {STATUS_LABELS[o.status] ?? o.status}
                 </span>
                 <span className="text-ink-muted">{timeAgo(o.createdAt)}</span>

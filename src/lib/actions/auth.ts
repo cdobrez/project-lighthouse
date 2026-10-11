@@ -8,6 +8,7 @@ import { createSession, destroySession, getCurrentUser } from "@/lib/auth";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { newId } from "@/lib/ids";
 import { NEIGHBORHOODS } from "@/lib/neighborhoods";
+import { notifyWelcome } from "@/lib/notifications";
 
 export type FormState = { error?: string; ok?: boolean } | undefined;
 
@@ -40,6 +41,7 @@ export async function signup(_prev: FormState, formData: FormData): Promise<Form
     })
     .run();
   await createSession(id);
+  void notifyWelcome(email, name);
   redirect(safeNext(next) ?? "/meals");
 }
 

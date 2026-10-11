@@ -49,6 +49,9 @@ Copy `.env.example` to `.env.local`.
 | `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` | Hosted database for production (the Turso integration on Vercel sets these automatically). |
 | `DATABASE_URL` (+ `DATABASE_AUTH_TOKEN`) | Any libSQL URL: `libsql://…`, `file:./data/gigkitchens.db`, or `:memory:`. Used when the Turso variables are absent. |
 | `SITE_URL` | Canonical URL for metadata (default `https://gigkitchens.com`). |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob for cook photo uploads (auto-set on Vercel). Falls back to `./data/uploads` on a writable disk. |
+| `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` | Turns on real payments via Stripe Checkout. Without them checkout is a demo. |
+| `RESEND_API_KEY` (+ `EMAIL_FROM`) | Order and welcome emails via Resend. Without it emails are skipped and logged. |
 
 With no database variables set, the app uses `./data/gigkitchens.db` when the disk is writable, otherwise an in-memory database that reseeds on every cold start (fine for previews, not for real orders).
 
@@ -76,10 +79,15 @@ npm run lint     # eslint
 npx drizzle-kit generate   # after changing the schema
 ```
 
+## Integrations that switch on by environment variable
+
+- **Photos**: cooks upload dish and portrait photos from their dashboard (Vercel Blob in production).
+- **Payments**: with Stripe keys set, checkout redirects to Stripe Checkout, the order waits in `pending_payment`, and the webhook (or the success page as a fallback) marks it placed. Cooks only see paid orders.
+- **Email**: order confirmations to neighbor and cook, status updates as the cook moves the order along, and a welcome email on sign-up.
+
 ## Roadmap ideas
 
-- Real payments (Stripe Connect so cooks get paid out directly)
-- Photo uploads for cooks
+- Stripe Connect so cooks get paid out directly
 - Push / SMS order updates
 - Neighbor courier matching for delivery
 - Map-based discovery and distance filters

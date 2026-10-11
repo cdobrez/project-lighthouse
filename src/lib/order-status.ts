@@ -5,6 +5,7 @@ export const ORDER_FLOW: Record<string, string[]> = {
 };
 
 export const STATUS_LABELS: Record<string, string> = {
+  pending_payment: "Awaiting payment",
   placed: "Order placed",
   accepted: "Cook accepted",
   cooking: "Cooking now",
@@ -19,6 +20,10 @@ export function nextStatus(fulfillment: string, status: string): string | null {
   const flow = ORDER_FLOW[fulfillment] ?? ORDER_FLOW.pickup;
   const i = flow.indexOf(status);
   return i >= 0 && i < flow.length - 1 ? flow[i + 1] : null;
+}
+
+export function isPending(status: string): boolean {
+  return status === "pending_payment";
 }
 
 export function isFinal(fulfillment: string, status: string): boolean {

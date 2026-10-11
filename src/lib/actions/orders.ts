@@ -8,6 +8,9 @@ import { getCurrentUser, getCurrentCook } from "@/lib/auth";
 import { newId } from "@/lib/ids";
 import { revalidatePath } from "next/cache";
 import { ORDER_FLOW } from "@/lib/order-status";
+import { isStripeConfigured, createCheckoutSession, checkoutSessionPaid } from "@/lib/stripe";
+import { notifyOrderPlaced, notifyOrderStatus } from "@/lib/notifications";
+import { photoSrc } from "@/lib/images";
 
 import { SERVICE_FEE_RATE, DELIVERY_FEE_CENTS } from "@/lib/pricing";
 
@@ -20,7 +23,7 @@ export type PlaceOrderInput = {
   tipCents: number;
 };
 
-export type PlaceOrderResult = { ok: true; orderId: string } | { ok: false; error: string };
+export type PlaceOrderResult = { ok: true; orderId: string; checkoutUrl?: string } | { ok: false; error: string };
 
 const inputSchema = z.object({
   items: z.array(z.object({ mealId: z.string().min(1), qty: z.number().int().min(1).max(20) })).min(1),
@@ -66,6 +69,7 @@ export async function placeOrder(raw: PlaceOrderInput): Promise<PlaceOrderResult
   const delivery = input.fulfillment === "delivery" ? DELIVERY_FEE_CENTS : 0;
   const total = subtotal + fee + delivery + input.tipCents;
   const orderId = newId("ord");
+  const payLater = isStripeConfigured();
 
   await db.transaction(async (tx) => {
     await tx.insert(schema.orders)
@@ -73,7 +77,7 @@ export async function placeOrder(raw: PlaceOrderInput): Promise<PlaceOrderResult
         id: orderId,
         userId: user.id,
         cookId,
-        status: "placed",
+        status: payLater ? "pending_payment" : "placed",
         fulfillment: input.fulfillment,
         address: input.fulfillment === "pickup" ? "" : input.address,
         scheduledFor: input.scheduledFor,
@@ -83,7 +87,7 @@ export async function placeOrder(raw: PlaceOrderInput): Promise<PlaceOrderResult
         deliveryCents: delivery,
         tipCents: input.tipCents,
         totalCents: total,
-        paymentRef: `demo_${newId()}`,
+        paymentRef: payLater ? "" : `demo_${newId()}`,
       })
       .run();
     for (const item of input.items) {
@@ -101,7 +105,110 @@ export async function placeOrder(raw: PlaceOrderInput): Promise<PlaceOrderResult
   revalidatePath("/meals");
   revalidatePath("/orders");
   revalidatePath("/cook");
+
+  if (payLater) {
+    const cook = await db.select().from(schema.cooks).where(eq(schema.cooks.id, cookId)).get();
+    const base = process.env.SITE_URL ?? "https://gigkitchens.com";
+    try {
+      const checkoutUrl = await createCheckoutSession({
+        orderId,
+        customerEmail: user.email,
+        cookName: cook?.displayName ?? "your cook",
+        feeCents: fee,
+        deliveryCents: delivery,
+        tipCents: input.tipCents,
+        lines: input.items.map((it) => {
+          const meal = mealRows.find((m) => m.id === it.mealId)!;
+          const src = photoSrc(meal.imageKey);
+          return { title: meal.title, qty: it.qty, unitCents: meal.priceCents, imageUrl: src ? (src.startsWith("/") ? `${base}${src}` : src) : undefined };
+        }),
+      });
+      return { ok: true, orderId, checkoutUrl };
+    } catch (err) {
+      console.error("[gigkitchens] stripe checkout failed", err);
+      await releaseOrder(orderId);
+      return { ok: false, error: "We couldn't start the payment. Nothing was charged. Please try again." };
+    }
+  }
+
+  void notifyOrderPlaced(orderId);
   return { ok: true, orderId };
+}
+
+/** Cancels an order and returns its portions to the cook's menu. */
+async function releaseOrder(orderId: string) {
+  const db = await getDb();
+  await db.transaction(async (tx) => {
+    const order = await tx.select().from(schema.orders).where(eq(schema.orders.id, orderId)).get();
+    if (!order || order.status === "cancelled") return;
+    await tx.update(schema.orders).set({ status: "cancelled", updatedAt: new Date().toISOString() }).where(eq(schema.orders.id, orderId)).run();
+    const items = await tx.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)).all();
+    for (const it of items) {
+      const meal = await tx.select().from(schema.meals).where(eq(schema.meals.id, it.mealId)).get();
+      if (meal) await tx.update(schema.meals).set({ portionsAvailable: meal.portionsAvailable + it.qty, timesOrdered: Math.max(0, meal.timesOrdered - it.qty) }).where(eq(schema.meals.id, meal.id)).run();
+    }
+  });
+}
+
+/** Marks a pending order as paid. Called from the Stripe webhook and from the success page as a fallback. */
+export async function confirmPayment(orderId: string, paymentRef: string): Promise<boolean> {
+  const db = await getDb();
+  const order = await db.select().from(schema.orders).where(eq(schema.orders.id, orderId)).get();
+  if (!order) return false;
+  if (order.status !== "pending_payment") return true;
+  await db.update(schema.orders).set({ status: "placed", paymentRef, updatedAt: new Date().toISOString() }).where(eq(schema.orders.id, orderId)).run();
+  revalidatePath(`/orders/${orderId}`);
+  revalidatePath("/orders");
+  revalidatePath("/cook");
+  void notifyOrderPlaced(orderId);
+  return true;
+}
+
+/** Success-page fallback: verifies the Checkout session with Stripe when the webhook hasn't arrived yet. */
+export async function verifyCheckoutSession(orderId: string, sessionId: string): Promise<boolean> {
+  const user = await getCurrentUser();
+  if (!user || !isStripeConfigured()) return false;
+  const db = await getDb();
+  const order = await db.select().from(schema.orders).where(and(eq(schema.orders.id, orderId), eq(schema.orders.userId, user.id))).get();
+  if (!order) return false;
+  if (order.status !== "pending_payment") return true;
+  try {
+    const { paid, paymentRef } = await checkoutSessionPaid(sessionId, orderId);
+    if (!paid) return false;
+    return confirmPayment(orderId, paymentRef);
+  } catch (err) {
+    console.error("[gigkitchens] could not verify checkout session", err);
+    return false;
+  }
+}
+
+/** Starts a fresh Checkout session for an order that is still awaiting payment. */
+export async function resumePayment(orderId: string): Promise<{ ok: true; checkoutUrl: string } | { ok: false; error: string }> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "Sign in first." };
+  if (!isStripeConfigured()) return { ok: false, error: "Payments aren't enabled." };
+  const db = await getDb();
+  const order = await db.select().from(schema.orders).where(and(eq(schema.orders.id, orderId), eq(schema.orders.userId, user.id))).get();
+  if (!order || order.status !== "pending_payment") return { ok: false, error: "This order isn't awaiting payment." };
+  const [items, cook] = await Promise.all([
+    db.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)).all(),
+    db.select().from(schema.cooks).where(eq(schema.cooks.id, order.cookId)).get(),
+  ]);
+  try {
+    const checkoutUrl = await createCheckoutSession({
+      orderId,
+      customerEmail: user.email,
+      cookName: cook?.displayName ?? "your cook",
+      feeCents: order.feeCents,
+      deliveryCents: order.deliveryCents,
+      tipCents: order.tipCents,
+      lines: items.map((i) => ({ title: i.title, qty: i.qty, unitCents: i.unitCents })),
+    });
+    return { ok: true, checkoutUrl };
+  } catch (err) {
+    console.error("[gigkitchens] stripe checkout failed", err);
+    return { ok: false, error: "We couldn't start the payment. Please try again." };
+  }
 }
 
 export async function advanceOrder(orderId: string, nextStatus: string): Promise<{ ok: boolean; error?: string }> {
@@ -110,6 +217,7 @@ export async function advanceOrder(orderId: string, nextStatus: string): Promise
   const db = await getDb();
   const order = await db.select().from(schema.orders).where(and(eq(schema.orders.id, orderId), eq(schema.orders.cookId, cook.id))).get();
   if (!order) return { ok: false, error: "Order not found." };
+  if (order.status === "pending_payment") return { ok: false, error: "This order hasn't been paid for yet." };
   const flow = ORDER_FLOW[order.fulfillment] ?? ORDER_FLOW.pickup;
   const allowed = [...flow, "cancelled"];
   if (!allowed.includes(nextStatus)) return { ok: false, error: "Invalid status." };
@@ -123,6 +231,7 @@ export async function advanceOrder(orderId: string, nextStatus: string): Promise
   revalidatePath("/cook");
   revalidatePath("/orders");
   revalidatePath(`/orders/${orderId}`);
+  void notifyOrderStatus(orderId, nextStatus);
   return { ok: true };
 }
 
@@ -131,7 +240,7 @@ export async function cancelMyOrder(orderId: string) {
   if (!user) redirect("/login");
   const db = await getDb();
   const order = await db.select().from(schema.orders).where(and(eq(schema.orders.id, orderId), eq(schema.orders.userId, user.id))).get();
-  if (!order || !["placed", "accepted"].includes(order.status)) return { ok: false, error: "This order can't be cancelled anymore." };
+  if (!order || !["pending_payment", "placed", "accepted"].includes(order.status)) return { ok: false, error: "This order can't be cancelled anymore." };
   await db.transaction(async (tx) => {
     await tx.update(schema.orders).set({ status: "cancelled", updatedAt: new Date().toISOString() }).where(eq(schema.orders.id, orderId)).run();
     const items = await tx.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, orderId)).all();

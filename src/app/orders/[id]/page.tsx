@@ -10,7 +10,9 @@ import { StatusTimeline } from "@/components/orders/status-timeline";
 import { CancelOrderButton } from "@/components/orders/cancel-order-button";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { money, FULFILLMENT_LABELS } from "@/lib/format";
-import { STATUS_LABELS, isFinal } from "@/lib/order-status";
+import { STATUS_LABELS, isFinal, isPending } from "@/lib/order-status";
+import { verifyCheckoutSession } from "@/lib/actions/orders";
+import { PayNowButton } from "@/components/orders/pay-now-button";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Order details" };
@@ -20,9 +22,13 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
   const sp = await props.searchParams;
   const user = await getCurrentUser();
   if (!user) redirect(`/login?next=/orders/${id}`);
-  const order = await getOrder(id);
+  let order = await getOrder(id);
   if (!order || order.userId !== user.id) notFound();
-  const justPlaced = sp.placed === "1";
+  if (sp.paid === "1" && typeof sp.session_id === "string" && isPending(order.status)) {
+    if (await verifyCheckoutSession(order.id, sp.session_id)) order = (await getOrder(id)) ?? order;
+  }
+  const justPlaced = sp.placed === "1" || (sp.paid === "1" && !isPending(order.status));
+  const pending = isPending(order.status);
   const done = isFinal(order.fulfillment, order.status) && order.status !== "cancelled";
   const issue = await getIssueForOrder(order.id);
   const myReviews = done ? await Promise.all(order.items.map((it) => userHasReviewed(user.id, it.mealId))) : [];
@@ -35,6 +41,17 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
           <p className="mt-1 text-sm text-ink-soft">
             You&apos;ll see the status move here as the cook accepts, cooks, and hands it off. No need to refresh your inbox.
           </p>
+        </div>
+      )}
+      {pending && (
+        <div className="mb-6 rounded-2xl bg-butter-soft p-5">
+          <p className="font-display text-2xl font-bold">One more step: payment</p>
+          <p className="mt-1 text-sm text-ink-soft">
+            {sp.cancelled === "1" ? "The payment screen was closed before finishing. " : ""}Your portions are reserved. Finish paying and {order.cook.displayName} gets the order.
+          </p>
+          <div className="mt-3">
+            <PayNowButton orderId={order.id} />
+          </div>
         </div>
       )}
       <nav className="mb-4 text-sm text-ink-muted" aria-label="Breadcrumb">
@@ -50,7 +67,7 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
             {FULFILLMENT_LABELS[order.fulfillment]?.label} · {order.scheduledFor}
           </p>
         </div>
-        {["placed", "accepted"].includes(order.status) && <CancelOrderButton orderId={order.id} />}
+        {["pending_payment", "placed", "accepted"].includes(order.status) && <CancelOrderButton orderId={order.id} />}
       </div>
 
       <div className="card mt-6 p-5">
@@ -153,7 +170,7 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
             </dl>
             <p className="mt-2 text-xs text-ink-muted">Payment ref {order.paymentRef}</p>
           </div>
-          {order.status !== "cancelled" && order.status !== "placed" && <ReportIssue orderId={order.id} existing={issue ? { kind: issue.kind, status: issue.status } : null} />}
+          {!["cancelled", "placed", "pending_payment"].includes(order.status) && <ReportIssue orderId={order.id} existing={issue ? { kind: issue.kind, status: issue.status } : null} />}
         </aside>
       </div>
     </Section>

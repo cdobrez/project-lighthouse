@@ -5,6 +5,7 @@ import type { Cook } from "@/lib/db/schema";
 import { becomeCook, updateCookProfile } from "@/lib/actions/cook";
 import { NEIGHBORHOODS } from "@/lib/neighborhoods";
 import { FULFILLMENT_LABELS } from "@/lib/format";
+import { PhotoUploader } from "@/components/photo-uploader";
 
 export function CookForm({ cook }: { cook?: Cook | null }) {
   const [state, action, pending] = useActionState(cook ? updateCookProfile : becomeCook, undefined);
@@ -24,6 +25,7 @@ export function CookForm({ cook }: { cook?: Cook | null }) {
           <input id="yearsCooking" name="yearsCooking" type="number" min={0} max={80} className="input" defaultValue={cook?.yearsCooking ?? 5} />
         </div>
       </div>
+      <PhotoUploader name="imageKey" initial={cook?.imageKey && cook.imageKey !== "cook-default" ? cook.imageKey : ""} kind="cook" label="Your photo" allowLibrary={false} />
       <div>
         <label className="label" htmlFor="tagline">
           Tagline

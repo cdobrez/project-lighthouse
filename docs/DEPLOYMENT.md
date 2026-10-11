@@ -32,6 +32,16 @@ Until a database is attached the site runs on an in-memory copy of the seed data
 
 Any other libSQL/Turso database works too: set `DATABASE_URL` and `DATABASE_AUTH_TOKEN` instead.
 
+## Optional integrations (each is a Vercel environment variable)
+
+| Feature | Variables | Where to get them |
+| --- | --- | --- |
+| Photo uploads | `BLOB_READ_WRITE_TOKEN` | Already set: the `gigkitchens-photos` Blob store is connected to the project. |
+| Real payments | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe dashboard → Developers → API keys; then add a webhook endpoint `https://gigkitchens.com/api/stripe/webhook` for `checkout.session.completed` and copy its signing secret. |
+| Email | `RESEND_API_KEY`, `EMAIL_FROM` | resend.com → verify the gigkitchens.com domain (two DNS records at GoDaddy) → API key. `EMAIL_FROM` like `Gig Kitchens <orders@gigkitchens.com>`. |
+
+Redeploy after adding variables. Nothing breaks when they are absent: uploads fall back to local disk (or a library photo), checkout runs in demo mode, and emails are logged instead of sent.
+
 ## Checking on it
 
 - Build and runtime logs: Vercel project → Deployments / Logs.

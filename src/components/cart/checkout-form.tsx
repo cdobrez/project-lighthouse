@@ -11,7 +11,7 @@ import { Photo } from "@/components/photo";
 
 type Fulfillment = "pickup" | "dropoff" | "delivery";
 
-export function CheckoutForm({ user }: { user: { name: string; address: string; neighborhood: string; phone: string } }) {
+export function CheckoutForm({ user, stripeEnabled = false }: { user: { name: string; address: string; neighborhood: string; phone: string }; stripeEnabled?: boolean }) {
   const { lines, subtotalCents, clear, hydrated } = useCart();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -61,6 +61,10 @@ export function CheckoutForm({ user }: { user: { name: string; address: string; 
       });
       if (result.ok) {
         clear();
+        if (result.checkoutUrl) {
+          window.location.assign(result.checkoutUrl);
+          return;
+        }
         router.push(`/orders/${result.orderId}?placed=1`);
       } else {
         setError(result.error);
@@ -127,25 +131,29 @@ export function CheckoutForm({ user }: { user: { name: string; address: string; 
 
         <div className="card p-5">
           <p className="text-lg font-bold">3. Payment</p>
-          <p className="mt-1 text-xs text-ink-muted">Demo checkout: no card is charged. Any number works.</p>
-          <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_120px_100px]">
+          {stripeEnabled ? (
+            <p className="mt-1 text-sm text-ink-soft">You&apos;ll pay securely on the next screen (card, Apple Pay or Google Pay). Your order is reserved while you pay.</p>
+          ) : (
+            <p className="mt-1 text-xs text-ink-muted">Demo checkout: no card is charged. Any number works.</p>
+          )}
+          <div className={`mt-3 grid gap-3 sm:grid-cols-[1fr_120px_100px] ${stripeEnabled ? "hidden" : ""}`}>
             <div>
               <label className="label" htmlFor="card">
                 Card number
               </label>
-              <input id="card" className="input" inputMode="numeric" value={card.number} onChange={(e) => setCard({ ...card, number: e.target.value })} required />
+              <input id="card" className="input" inputMode="numeric" value={card.number} onChange={(e) => setCard({ ...card, number: e.target.value })} required={!stripeEnabled} />
             </div>
             <div>
               <label className="label" htmlFor="exp">
                 Expiry
               </label>
-              <input id="exp" className="input" value={card.exp} onChange={(e) => setCard({ ...card, exp: e.target.value })} required />
+              <input id="exp" className="input" value={card.exp} onChange={(e) => setCard({ ...card, exp: e.target.value })} required={!stripeEnabled} />
             </div>
             <div>
               <label className="label" htmlFor="cvc">
                 CVC
               </label>
-              <input id="cvc" className="input" inputMode="numeric" value={card.cvc} onChange={(e) => setCard({ ...card, cvc: e.target.value })} required />
+              <input id="cvc" className="input" inputMode="numeric" value={card.cvc} onChange={(e) => setCard({ ...card, cvc: e.target.value })} required={!stripeEnabled} />
             </div>
           </div>
         </div>
@@ -194,7 +202,7 @@ export function CheckoutForm({ user }: { user: { name: string; address: string; 
         </dl>
         {error && <p className="mt-3 rounded-xl bg-tomato-soft p-3 text-sm font-semibold text-tomato-deep">{error}</p>}
         <button type="submit" className="btn-primary mt-4 w-full py-3 text-base" disabled={pending}>
-          {pending ? "Placing order…" : `Place order · ${money(total)}`}
+          {pending ? (stripeEnabled ? "Taking you to payment…" : "Placing order…") : stripeEnabled ? `Continue to payment · ${money(total)}` : `Place order · ${money(total)}`}
         </button>
         <p className="mt-3 text-center text-xs text-ink-muted">
           Ordering as {user.name}. Cooks keep {100 - SERVICE_FEE_RATE * 100}% of the food price plus the full tip.

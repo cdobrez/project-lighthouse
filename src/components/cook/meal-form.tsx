@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import type { Meal } from "@/lib/db/schema";
 import { createMeal, updateMeal } from "@/lib/actions/cook";
 import { DAY_ORDER, FULFILLMENT_LABELS } from "@/lib/format";
-import { MEAL_PHOTO_KEYS } from "@/lib/images";
+import { PhotoUploader } from "@/components/photo-uploader";
 
 export function MealForm({ meal, cookFulfillment }: { meal?: Meal | null; cookFulfillment: string[] }) {
   const bound = meal ? updateMeal.bind(null, meal.id) : createMeal;
@@ -100,19 +100,8 @@ export function MealForm({ meal, cookFulfillment }: { meal?: Meal | null; cookFu
           </label>
           <input id="portionsAvailable" name="portionsAvailable" type="number" min={0} max={200} className="input" defaultValue={meal?.portionsAvailable ?? 10} />
         </div>
-        <div>
-          <label className="label" htmlFor="imageKey">
-            Photo
-          </label>
-          <select id="imageKey" name="imageKey" className="input" defaultValue={meal?.imageKey ?? "meal-default"}>
-            <option value="meal-default">Use an illustrated placeholder</option>
-            {MEAL_PHOTO_KEYS.map((k) => (
-              <option key={k} value={k}>
-                {k.replace("meal-", "").replace(/-/g, " ")}
-              </option>
-            ))}
-          </select>
-          <p className="mt-1 text-xs text-ink-muted">Photo uploads are coming. For now pick a library photo or a placeholder.</p>
+        <div className="sm:col-span-3">
+          <PhotoUploader name="imageKey" initial={meal?.imageKey ?? ""} kind="meal" label="Photo of the dish" />
         </div>
       </div>
       <fieldset>

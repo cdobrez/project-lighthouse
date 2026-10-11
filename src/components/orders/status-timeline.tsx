@@ -5,6 +5,9 @@ export function StatusTimeline({ fulfillment, status }: { fulfillment: string; s
   if (status === "cancelled") {
     return <p className="rounded-xl bg-cream-deep p-3 text-sm font-semibold text-ink-soft">This order was cancelled.</p>;
   }
+  if (status === "pending_payment") {
+    return <p className="rounded-xl bg-butter-soft p-3 text-sm font-semibold text-ink">Waiting for payment. The cook is notified the moment it goes through.</p>;
+  }
   const idx = flow.indexOf(status);
   return (
     <ol className="grid gap-2 sm:grid-cols-5" aria-label="Order progress">

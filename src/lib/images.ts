@@ -51,12 +51,15 @@ export const PHOTO_ALT: Record<string, string> = {
   "cook-tomas": "Tomas pressing corn tortillas in his kitchen",
 };
 
+/** A photo reference is either a library key (served from /public/images) or an uploaded URL. */
 export function photoSrc(key: string): string | null {
+  if (!key) return null;
+  if (key.startsWith("http://") || key.startsWith("https://") || key.startsWith("/")) return key;
   return LOCAL.has(key) ? `/images/${key}.jpg` : null;
 }
 
 export function hasPhoto(key: string): boolean {
-  return LOCAL.has(key);
+  return photoSrc(key) !== null;
 }
 
 export const MEAL_PHOTO_KEYS = LOCAL_PHOTOS.filter((k) => k.startsWith("meal-"));

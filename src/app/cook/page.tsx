@@ -15,8 +15,8 @@ export default async function CookOrdersPage(props: PageProps<"/cook">) {
   const cook = await requireCook();
   const orders = await listOrdersForCook(cook.id);
   const issues = await listIssuesForCook(cook.id);
-  const open = orders.filter((o) => !isFinal(o.fulfillment, o.status));
-  const done = orders.filter((o) => isFinal(o.fulfillment, o.status));
+  const open = orders.filter((o) => !isFinal(o.fulfillment, o.status) && o.status !== "pending_payment");
+  const done = orders.filter((o) => isFinal(o.fulfillment, o.status) && o.status !== "pending_payment");
   const earned = done.filter((o) => o.status !== "cancelled").reduce((a, o) => a + Math.round(o.subtotalCents * COOK_SHARE) + o.tipCents, 0);
   const pendingEarn = open.reduce((a, o) => a + Math.round(o.subtotalCents * COOK_SHARE) + o.tipCents, 0);
 
