@@ -172,6 +172,49 @@
   .legend .cost i { background: var(--series-openai); }
   .legend .save i { background: var(--series-anthropic); }
 
+
+  /* Learning curve */
+  .levels { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 18px; }
+  .lvl { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; min-width: 0; }
+  .lvl .n { font-family: var(--display); font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+  .lvl .t { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+  .lvl .s { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .lvl-1 .n { color: var(--muted); } .lvl-2 .n { color: var(--ai-ink); } .lvl-3 .n { color: var(--ai); } .lvl-4 .n { color: var(--dober); } .lvl-5 .n { color: var(--dober-ink); }
+  .curve-wrap { position: relative; margin-top: 14px; }
+  .curve-wrap svg { width: 100%; height: auto; display: block; font-family: var(--body); }
+  .curve-wrap .band { fill: var(--grid); opacity: 0.45; }
+  .curve-wrap .band-label { font-family: var(--display); font-size: 15px; font-weight: 600; fill: var(--muted); letter-spacing: 0.02em; }
+  .curve-wrap .band-sub { font-size: 10.5px; fill: var(--muted); }
+  .curve-wrap .axis text { fill: var(--muted); font-size: 12px; }
+  .curve-wrap .axis line { stroke: var(--line); }
+  .curve-wrap .win { stroke: var(--surface); stroke-width: 2; cursor: pointer; }
+  .curve-wrap .win.dober { fill: var(--series-anthropic); }
+  .curve-wrap .win.spindle { fill: var(--series-openai); }
+  .curve-wrap .win.ceo { fill: var(--fg); }
+  .curve-wrap .win.active { stroke: var(--fg); stroke-width: 3; }
+  .curve-wrap .trend { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 5; fill: none; }
+  .curve-wrap .trend-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; fill: var(--muted); }
+  .legend .dober i { background: var(--series-anthropic); height: 10px; width: 10px; border-radius: 50%; }
+  .legend .spindle i { background: var(--series-openai); height: 10px; width: 10px; border-radius: 50%; }
+  .legend .ceo i { background: var(--fg); height: 10px; width: 10px; border-radius: 50%; }
+  .tooltip.wide { white-space: normal; max-width: 300px; min-width: 220px; }
+  .tooltip.wide p { margin: 4px 0 0; }
+  .thesis { font-family: var(--display); font-size: clamp(24px, 3.4vw, 34px); font-weight: 600; line-height: 1.15; margin: 20px 0 0; padding: 14px 18px; border-left: 4px solid var(--dober); background: var(--dober-soft); color: var(--dober-ink); text-wrap: balance; }
+  .wins { margin-top: 20px; }
+  .wins details { border-top: 1px solid var(--line); }
+  .wins summary { cursor: pointer; padding: 12px 0; font-family: var(--display); font-size: 21px; font-weight: 600; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .wins summary .count { font-family: var(--mono); font-size: 12px; font-weight: 400; color: var(--muted); letter-spacing: 0.06em; }
+  .wins summary .desc { font-family: var(--body); font-size: 13px; font-weight: 400; color: var(--muted); }
+  .win-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; padding-bottom: 16px; }
+  .win-card { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; min-width: 0; font-size: 13.5px; }
+  .win-card .who { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; display: flex; gap: 8px; flex-wrap: wrap; }
+  .win-card .who i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+  .win-card.dober .who i { background: var(--series-anthropic); } .win-card.spindle .who i { background: var(--series-openai); } .win-card.ceo .who i { background: var(--fg); }
+  .win-card h4 { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 4px 0 0; line-height: 1.15; }
+  .win-card p { margin: 5px 0 0; }
+  .win-card .meta { color: var(--muted); font-size: 12px; margin-top: 6px; }
+  @media (max-width: 759px) { .levels { grid-template-columns: repeat(2, 1fr); } .lvl:last-child { grid-column: 1 / -1; } }
+
   /* Dober Brain */
   .brain-wrap { margin-top: 18px; overflow-x: auto; }
   .brain-wrap svg { width: 100%; min-width: 640px; height: auto; display: block; font-family: var(--body); }
@@ -241,7 +284,7 @@
   <div class="wrap">
     <a href="#y2022">2022</a><a href="#y2023">2023</a><a href="#y2024">2024</a><a href="#y2025">2025</a><a href="#y2026">2026</a>
     <span class="cols"><span><b>Left</b> AI world</span><span><b>Right</b> Dober</span></span>
-    <a class="jump" href="#brain">Dober Brain &darr;</a>
+    <a class="jump" href="#curve">Learning curve</a><a class="jump" href="#brain" style="margin-left:0">Dober Brain &darr;</a>
   </div>
 </nav>
 
@@ -323,10 +366,541 @@
     { d: '2026-09', side: 'ai', milestone: true, title: 'GPT-6, Claude 5.5, Gemini 4', body: 'OpenAI launches GPT-6 (September 3). Anthropic ships Claude Fable 5.1 (September 1), Opus 5.5 (September 22) and Sonnet 5.5 (September 28). Google previews Gemini 4 to vetted partners. OpenAI tells investors its run rate is about $50B.' },
     { d: '2026-10', side: 'ai', title: 'Today', body: 'Gemini 4 reaches general availability October 13. Claude Haiku 5.5 and GPT-6 Pro with parallel agents ship. Anthropic prepares an IPO with investors projecting a $110B year-end run rate. Four years after ChatGPT, agents are the product.' },
     { d: '2026-10', side: 'dober', milestone: true, title: 'Where we are: still experimenting, still pushing', body: 'Four years in, the pattern holds: experiment, learn, commit. AI is in formulation, engineering, and daily workflows. The next job is the Dober Brain: record everything, then contextualize and connect it.', tag: 'Now' },
+    { d: '2026-10', type: 'curve' },
     { d: '2026-10', type: 'brain' }
   ];
 
   var ROI_START = '2025-02', ROI_END = '2026-10', ROI_COST = 1500, ROI_SAVE = 10000;
+
+  // ---------- The learning curve: every AI win, by date and difficulty ----------
+  // level: 1 = typed a prompt; 2 = routine prompt or template; 3 = configured tool, connector or multi-step workflow;
+  // 4 = agent or integration that needed engineering; 5 = production system built over weeks. team: dober, spindle, ceo.
+  var LEVELS = [
+    [1, 'Prompt', 'typed a question into a chatbot'],
+    [2, 'Routine', 'a repeatable prompt or template, used every week'],
+    [3, 'Workflow', 'a configured tool, connector, project or multi-step flow'],
+    [4, 'Agent', 'an agent or integration that took engineering and testing'],
+    [5, 'System', 'a production system built over weeks']
+  ];
+  var WINS = [
+    {
+        "d": "2022-12",
+        "team": "dober",
+        "level": 1,
+        "who": "Whole company",
+        "title": "ChatGPT opened to everyone in launch week",
+        "what": "Dober bought chat seats the week ChatGPT shipped and put the tool in front of everyone instead of blocking it, with one question: what can you do with this that you could not do last month?",
+        "tool": "ChatGPT",
+        "outcome": "Curiosity, no plan yet",
+        "source": "AI First Journey page"
+    },
+    {
+        "d": "2023-01",
+        "team": "dober",
+        "level": 1,
+        "who": "Q1 award winners",
+        "title": "First $100 award: an email drafted with AI",
+        "what": "The first quarterly AI awards went to basic uses. Using AI to help write an email was enough to win $100 in Q1 2023. That was the point: get people using it.",
+        "tool": "ChatGPT",
+        "outcome": "Adoption stories shared company-wide",
+        "source": "CEO, this session"
+    },
+    {
+        "d": "2023-03",
+        "team": "dober",
+        "level": 1,
+        "who": "Knowledge workers",
+        "title": "Drafting, summarizing, translating",
+        "what": "Year one uses across the company: first drafts, meeting summaries and translations for customers in 40 countries.",
+        "tool": "ChatGPT, Google Bard",
+        "outcome": "not measured",
+        "source": "AI First Journey page"
+    },
+    {
+        "d": "2023-05",
+        "team": "dober",
+        "level": 1,
+        "who": "Sales and customer service",
+        "title": "First customer letters written with AI",
+        "what": "Customer-facing letters drafted with a chatbot and reviewed by the sender before anything went out.",
+        "tool": "ChatGPT",
+        "outcome": "not measured",
+        "source": "AI First Journey page"
+    },
+    {
+        "d": "2023-08",
+        "team": "dober",
+        "level": 1,
+        "who": "Support and marketing",
+        "title": "Scattered wins in support and marketing",
+        "what": "Support replies and marketing copy drafted with AI by individuals who found their own uses. Nobody measured it, and nobody had to.",
+        "tool": "ChatGPT",
+        "outcome": "not measured",
+        "source": "Master Deck, 2023 row"
+    },
+    {
+        "d": "2023-10",
+        "team": "dober",
+        "level": 2,
+        "who": "Formulation chemists",
+        "title": "AI on chemical formulations",
+        "what": "Chemists began using AI to work through formulation questions, first formulas and literature. Still in daily use three years later.",
+        "tool": "ChatGPT, later Claude",
+        "outcome": "in daily use through 2026",
+        "source": "CEO, this session; AI First Journey page"
+    },
+    {
+        "d": "2024-04",
+        "team": "dober",
+        "level": 3,
+        "who": "Every department",
+        "title": "A pilot in every department",
+        "what": "After naming an AI transformation leader, each department ran an AI pilot against its own work. Most stalled on data access and data quality.",
+        "tool": "mixed",
+        "outcome": "Most stalled on data. The lesson that led to the data layer",
+        "source": "Master Deck, 2024 row"
+    },
+    {
+        "d": "2024-06",
+        "team": "spindle",
+        "level": 2,
+        "who": "Spindle engineers",
+        "title": "Spindle adopts Cursor",
+        "what": "The engineering team standardized on the AI-native code editor before agentic coding tools existed. First AI-written production code at Dober.",
+        "tool": "Cursor",
+        "outcome": "not measured",
+        "source": "CEO, this session"
+    },
+    {
+        "d": "2024-10",
+        "team": "dober",
+        "level": 3,
+        "who": "Operations and customer service",
+        "title": "Narrow, boring wins: order status, document retrieval, exception triage",
+        "what": "The pilots that got traction were small and specific: look up an order status, find the right document, triage an exception. Not moonshots.",
+        "tool": "Claude projects and retrieval over company documents",
+        "outcome": "The wins that survived 2024",
+        "source": "Operator's Playbook"
+    },
+    {
+        "d": "2025-02",
+        "team": "spindle",
+        "level": 3,
+        "who": "Spindle engineers",
+        "title": "Spindle moves to Claude Code",
+        "what": "Engineers hand whole tasks to a terminal agent that reads the codebase, writes the change and runs the tests, instead of autocompleting lines.",
+        "tool": "Claude Code",
+        "outcome": "Agentic coding becomes the default",
+        "source": "CEO, this session"
+    },
+    {
+        "d": "2025-02",
+        "team": "dober",
+        "level": 2,
+        "who": "Legal",
+        "title": "CoCounsel for legal review",
+        "what": "A bought-not-built legal AI assistant plugged into contract and legal review. The first agent in production at Dober, by the decks' own account.",
+        "tool": "CoCounsel",
+        "outcome": "About $10,000 a month saved against $1,500 a month in cost",
+        "source": "CEO, this session; Strategic Thesis 2025 row"
+    },
+    {
+        "d": "2025-07",
+        "team": "dober",
+        "level": 4,
+        "who": "Customer support",
+        "title": "First production agent in customer support",
+        "what": "An agent built against real support work rather than a demo, drafting responses with evidence for a person to approve.",
+        "tool": "Claude platform",
+        "outcome": "not stated",
+        "source": "Strategic Thesis, 2025 row"
+    },
+    {
+        "d": "2025-08",
+        "team": "spindle",
+        "level": 5,
+        "who": "Spindle product",
+        "title": "Spindle Intelligence goes to market",
+        "what": "AI layered on top of 450 connected laundry plants and sold as a product. The first time Dober sold AI rather than used it.",
+        "tool": "Spindle Intelligence",
+        "outcome": "First AI product revenue",
+        "source": "AI First Journey page"
+    },
+    {
+        "d": "2025-09",
+        "team": "dober",
+        "level": 3,
+        "who": "About 100 knowledge workers",
+        "title": "One AI platform, centrally managed",
+        "what": "Several AI tools consolidated onto one enterprise platform with onboarding and offboarding checklists and an AI Steering Committee to govern it.",
+        "tool": "Claude Teams, then Claude Enterprise in early 2026",
+        "outcome": "Fixed the distribution problem the readiness audit found",
+        "source": "AI First Journey page; Operator's Playbook"
+    },
+    {
+        "d": "2026-01",
+        "team": "dober",
+        "level": 4,
+        "who": "Dober AI lab",
+        "title": "OpenClaw lab on eight Mac minis",
+        "what": "An always-on internal agent lab running OpenClaw on Dober activities to learn where agents are useful, where they break and how to keep them safe.",
+        "tool": "OpenClaw, Claude",
+        "outcome": "Firsthand knowledge of where agents fail",
+        "source": "CEO, this session"
+    },
+    {
+        "d": "2026-02",
+        "team": "ceo",
+        "level": 3,
+        "who": "CEO",
+        "title": "An agent runs the CEO's mornings",
+        "what": "A calendar brief that arrives before he wakes, files organized, documents analyzed and first drafts waiting. The CEO uses every tool before asking anyone else to.",
+        "tool": "Claude with connectors",
+        "outcome": "Time shifts from gathering information to deciding",
+        "source": "Operator's Playbook"
+    },
+    {
+        "d": "2026-02",
+        "team": "dober",
+        "level": 3,
+        "who": "Whole company",
+        "title": "Claude Enterprise rolled out",
+        "what": "Shared projects, connectors into company data and Claude Code for engineers under one agreement, announced alongside the Agentic Leap town hall and its rule: AI drafts and proposes, a person decides.",
+        "tool": "Claude Enterprise",
+        "outcome": "Ninety-day agent deployments set",
+        "source": "CEO, this session; AI First Journey page"
+    },
+    {
+        "d": "2026-03",
+        "team": "ceo",
+        "level": 2,
+        "who": "CEO",
+        "title": "Every meeting recorded, transcribed and searchable",
+        "what": "A pocket recorder captures meetings; transcripts are titled automatically and searchable from Claude, over 500 recordings deep by October.",
+        "tool": "Plaud with the Claude connector",
+        "outcome": "About 3 hours a week on meeting capture and follow-ups",
+        "source": "TRSA talk; KPI board session"
+    },
+    {
+        "d": "2026-05",
+        "team": "dober",
+        "level": 3,
+        "who": "Controller and finance",
+        "title": "25 to 30 canonical business definitions",
+        "what": "Before building agents, Dober wrote down what counts as a plant, a pound, a late route, an active account and gross margin, with the Controller as data steward and corrections as reviewed changes.",
+        "tool": "shared record of truth",
+        "outcome": "One definition per metric, owned by finance",
+        "source": "Operator's Playbook"
+    },
+    {
+        "d": "2026-06",
+        "team": "dober",
+        "level": 5,
+        "who": "Two engineers and IT",
+        "title": "A modern data warehouse replaces a decade-old reporting stack",
+        "what": "Dated copies of ERP, CRM and support-desk data with security and baselines, so every system can feed one brain. Getting data out of the ERP took six to ten weeks and one person who knew how.",
+        "tool": "cloud data warehouse",
+        "outcome": "The single most important project of the year",
+        "source": "Master Deck; AI First Journey page"
+    },
+    {
+        "d": "2026-06",
+        "team": "dober",
+        "level": 5,
+        "who": "Whole company",
+        "title": "One company brain, read-only in year one",
+        "what": "Teams, Slack, email, meetings, Asana, HubSpot and Zendesk captured, transcribed and connected into one shared memory. Every answer sourced and dated. In progress.",
+        "tool": "capture layer plus frontier model",
+        "outcome": "in progress",
+        "source": "Master Deck; AI First Journey page"
+    },
+    {
+        "d": "2026-07",
+        "team": "ceo",
+        "level": 4,
+        "who": "CEO",
+        "title": "Buddy: nightly briefs in Slack",
+        "what": "A scheduled agent researches the web overnight and posts an AI-First Enterprise brief and a data-center cooling brief at 2 a.m., each item tagged with what it means for Dober.",
+        "tool": "Buddy, an OpenClaw-style agent",
+        "outcome": "Daily since July 2026",
+        "source": "KPI board session, Slack search"
+    },
+    {
+        "d": "2026-07",
+        "team": "dober",
+        "level": 4,
+        "who": "Regulatory (Heather DeMase)",
+        "title": "Claude plus UL LOLI for Safety Data Sheets",
+        "what": "Getting API access to UL's regulatory database so Claude can pull the data and draft SDS documents. Legal exposure checked with Claude first; UL call scheduled.",
+        "tool": "Claude, UL LOLI API",
+        "outcome": "in progress",
+        "source": "KPI board session, Slack channel #11_08"
+    },
+    {
+        "d": "2026-07",
+        "team": "spindle",
+        "level": 5,
+        "who": "Spindle engineers (Chidambaram Ganesan)",
+        "title": "Project Nova: rewriting Spindle to be AI-native",
+        "what": "A system of record, typed tools and provenance on every answer, built for agents from day one so 450 plants can run agents over their own data. System design complete July 2026, CMMS ships January 2027.",
+        "tool": "Nova architecture, Claude Code",
+        "outcome": "7 repos, 520 issues, 34 architecture decisions by October",
+        "source": "Nova Program Status; Fifth Third brief"
+    },
+    {
+        "d": "2026-07",
+        "team": "ceo",
+        "level": 3,
+        "who": "CEO",
+        "title": "A 33-minute executive talk summarized into the knowledge base",
+        "what": "Buddy summarized an AWS agentic-AI talk, mapped it to the Dober Brain thesis, flagged it for the TRSA talk and saved it as knowledge base entry 81.",
+        "tool": "Buddy",
+        "outcome": "Knowledge base entry 81",
+        "source": "KPI board session, Slack search"
+    },
+    {
+        "d": "2026-08",
+        "team": "ceo",
+        "level": 3,
+        "who": "CEO",
+        "title": "ERP transition assessment from one uploaded document",
+        "what": "A role-and-skills analysis dropped into Slack became a full JDE transition and outsourcing assessment: what outsources cleanly, cost comparison, a five-step plan with a knowledge-capture sprint into the Dober Brain.",
+        "tool": "Buddy",
+        "outcome": "Saved as a corporate assessment the same day",
+        "source": "KPI board session, Slack search"
+    },
+    {
+        "d": "2026-08",
+        "team": "ceo",
+        "level": 2,
+        "who": "CEO",
+        "title": "Thought-leadership posts drafted by the agent",
+        "what": "LinkedIn and #aienterprise posts drafted with suggested visuals and the reasoning behind them, for the CEO to edit and publish.",
+        "tool": "Buddy",
+        "outcome": "About 1 hour a week on content",
+        "source": "KPI board session; TRSA talk"
+    },
+    {
+        "d": "2026-08",
+        "team": "dober",
+        "level": 4,
+        "who": "Marketing (chemical units)",
+        "title": "Project Thunderdome: the marketing scorecard writes itself",
+        "what": "Internal AI tooling pulls HubSpot, Asana, YouTube and GA4 into a reconciled year-to-date scorecard, plus an SEO and answer-engine program and about 30 LinkedIn posts a week.",
+        "tool": "Project Thunderdome",
+        "outcome": "AI referrals produced 16 contacts in 2026 versus none before; organic lead efficiency up 47%",
+        "source": "Chemical Units Marketing Scorecard"
+    },
+    {
+        "d": "2026-09",
+        "team": "spindle",
+        "level": 3,
+        "who": "Spindle engineering and PM",
+        "title": "Sprint status pages from a live Jira query",
+        "what": "Sprint 341 and 342 pages regenerated from all 248 issues on the board: status buckets, owner load, defect mix, with day-over-day deltas.",
+        "tool": "Claude with the Atlassian connector",
+        "outcome": "Refreshed daily during the sprint",
+        "source": "Spindle Sprint 341 and 342"
+    },
+    {
+        "d": "2026-09",
+        "team": "spindle",
+        "level": 3,
+        "who": "Nova engineering",
+        "title": "Database schema map drawn from the migrations",
+        "what": "68 tables across 19 migrations drawn as per-domain entity diagrams with the conventions called out, revised as new migrations land.",
+        "tool": "Claude",
+        "outcome": "Living documentation",
+        "source": "Spindle Nova Schema Map"
+    },
+    {
+        "d": "2026-09",
+        "team": "spindle",
+        "level": 3,
+        "who": "Spindle product",
+        "title": "Spindle CMMS 2.0 clickable prototype",
+        "what": "A desktop and mobile prototype of the AI-native CMMS: ask-the-plant omnibox, work orders drafted from voice or photo, predictive alerts, auto-drafted purchase orders, autonomy settings with human gates.",
+        "tool": "Claude artifacts",
+        "outcome": "Design target for the January 2027 product",
+        "source": "Spindle CMMS 2.0 pages"
+    },
+    {
+        "d": "2026-09",
+        "team": "dober",
+        "level": 4,
+        "who": "Finance",
+        "title": "Close-assist agent for month-end inventory reconciliation",
+        "what": "Finance asked for this unprompted in 2025. The agent flags reconciliation exceptions and drafts variance explanations inside the company chat tool, read-only, with a person signing off.",
+        "tool": "custom agent on Claude",
+        "outcome": "Target: close in one day instead of three. In build",
+        "source": "Operator's Playbook; Master Deck"
+    },
+    {
+        "d": "2026-09",
+        "team": "spindle",
+        "level": 5,
+        "who": "Spindle Robotics (Koushik)",
+        "title": "Autonomous package handling at Nashua",
+        "what": "A robotic cell on a customer's production line running packages on its own, validated against the customer's own production data, not demo rate.",
+        "tool": "Spindle Robotics",
+        "outcome": "201,670 packages run autonomously by September",
+        "source": "Dober Loop Board"
+    },
+    {
+        "d": "2026-10",
+        "team": "ceo",
+        "level": 3,
+        "who": "CEO",
+        "title": "A KPI board to run the business, built in six minutes",
+        "what": "One request produced a 39-KPI board across cash, sales, operations, people and strategy, connected to Asana, with a shared database and view-only sharing.",
+        "tool": "Claude Code with Asana, Slack and Plaud connectors",
+        "outcome": "Found that no team had set Q4 rocks and 21 of 63 rocks were complete",
+        "source": "KPI board session"
+    },
+    {
+        "d": "2026-10",
+        "team": "ceo",
+        "level": 2,
+        "who": "CEO",
+        "title": "A conference talk from a 20-minute voice memo",
+        "what": "One plant walk, one question, twenty minutes dictated on the drive back. The recording transcribed itself and AI turned it into the structure of a 15-slide TRSA talk.",
+        "tool": "Plaud and Claude",
+        "outcome": "No secretary required",
+        "source": "Start With the Plant You Have"
+    },
+    {
+        "d": "2026-10",
+        "team": "ceo",
+        "level": 2,
+        "who": "CEO",
+        "title": "Five conference decks and four films, researched and built with Claude",
+        "what": "The AI-first decks, the TRSA films and the Fifth Third brief were produced as Claude artifacts, with external figures verified between October 7 and 18.",
+        "tool": "Claude Slides, Motion and Code",
+        "outcome": "About 3 hours a week on decks and documents",
+        "source": "Master Deck sources slide; TRSA talk"
+    },
+    {
+        "d": "2026-10",
+        "team": "ceo",
+        "level": 1,
+        "who": "CEO",
+        "title": "Strategy memos, candidate and vendor reviews",
+        "what": "Decision memos drafted with AI and reviewed before they ship; candidates and vendors screened with AI as a first pass.",
+        "tool": "Claude",
+        "outcome": "About 4 hours a week on memos, 1.5 on reviews",
+        "source": "TRSA talk, How I use AI every day"
+    },
+    {
+        "d": "2026-10",
+        "team": "ceo",
+        "level": 1,
+        "who": "CEO",
+        "title": "A bank meeting brief from one dictation",
+        "what": "A rough iPhone dictation of the four Above All Else priorities became a scrollable brief for Fifth Third with a revenue chart and a list of dictation calls to confirm.",
+        "tool": "Claude Code",
+        "outcome": "Built in three minutes",
+        "source": "Fifth Third session"
+    },
+    {
+        "d": "2026-10",
+        "team": "ceo",
+        "level": 4,
+        "who": "CEO",
+        "title": "Dober Loop Board: the open-loops register",
+        "what": "An agent reads Microsoft 365, Asana and Plaud on a schedule, tracks 50 open loops with ages and due dates, and flags what needs the CEO, including when a connector goes dark.",
+        "tool": "Claude with connectors and an Obsidian register",
+        "outcome": "About 2.5 hours a week on Slack, Asana and email sweeps",
+        "source": "Dober Loop Board; TRSA talk"
+    },
+    {
+        "d": "2026-10",
+        "team": "spindle",
+        "level": 4,
+        "who": "Nova program (Chief Solution Architect)",
+        "title": "Nova Program Status compiled across seven repos and Jira",
+        "what": "A Claude Code session reads seven repositories, parses decision records and gap registers, pulls epic counts from Jira and reports what changed since the last read.",
+        "tool": "Claude Code with the Atlassian connector",
+        "outcome": "Gap rows settled went from 4 to 26 in a month, driven by regenerated open-items sheets",
+        "source": "Nova Program Status"
+    },
+    {
+        "d": "2026-10",
+        "team": "spindle",
+        "level": 4,
+        "who": "Spindle engineering (Scott Dobrez)",
+        "title": "How we code with AI: two AI auditors, two human gates",
+        "what": "A hierarchy of controls for AI-first development on Nova: spec-driven work, two AI auditors reviewing every change and two human approval gates before merge.",
+        "tool": "Claude Code",
+        "outcome": "Proposal posted October 8, following the October 5 decision",
+        "source": "Dober Loop Board"
+    },
+    {
+        "d": "2026-10",
+        "team": "spindle",
+        "level": 3,
+        "who": "Support L2",
+        "title": "SLA attainment dashboard from Zendesk's own clock",
+        "what": "Every SLA clock met or breached by priority and type, compared to the prior fortnight, with each breached ticket listed by customer.",
+        "tool": "Claude reading the Zendesk API",
+        "outcome": "200 of 212 clocks met in the October window",
+        "source": "Support L2 SLA Attainment"
+    },
+    {
+        "d": "2026-10",
+        "team": "spindle",
+        "level": 2,
+        "who": "Spindle Robotics (Tom Abbett)",
+        "title": "Decision deck for the CEO built with Claude",
+        "what": "An 18-slide follow-up to the October 7 meeting: a vendor quote, partnership terms, a vision proposal and two decisions requested, with speaker notes and appendices.",
+        "tool": "Claude Slides",
+        "outcome": "Decisions framed for one meeting",
+        "source": "Follow Up Review, October 12"
+    },
+    {
+        "d": "2026-10",
+        "team": "dober",
+        "level": 5,
+        "who": "Lumen platform team",
+        "title": "Lumen Foundation and the first scheduling agent",
+        "what": "Dober's internal AI platform: shared services, master data and event history under six modules. The scheduling agent drafts per-site production schedules, switched on site by site, every action on a tamper-evident audit log.",
+        "tool": "Lumen, sched-agent v1.4",
+        "outcome": "Built once, not six times. Foundation ready October 12",
+        "source": "Lumen Foundation"
+    },
+    {
+        "d": "2026-10",
+        "team": "dober",
+        "level": 4,
+        "who": "Customer service and Lumen team",
+        "title": "Order agent parses incoming sales orders",
+        "what": "The Sales Order Automation module's agent reads incoming orders into the system of record. Lumen reads from JDE and never writes to it; outbound changes go as a file JDE Orchestration picks up.",
+        "tool": "Lumen, order-agent v0.9",
+        "outcome": "At version 0.9, in pilot",
+        "source": "Lumen Foundation"
+    },
+    {
+        "d": "2026-10",
+        "team": "dober",
+        "level": 3,
+        "who": "Operations, lab and HR",
+        "title": "Spreadsheet records move into Lumen",
+        "what": "Records that lived in Excel with no system of record, the organization tree, operating calendars, lab chemical inventory, training and qualifications, get a home where AI can work on them.",
+        "tool": "Lumen",
+        "outcome": "in progress",
+        "source": "Lumen Foundation"
+    },
+    {
+        "d": "2026-10",
+        "team": "spindle",
+        "level": 5,
+        "who": "Spindle Robotics",
+        "title": "Cloth manipulation R&D: field data to robot model",
+        "what": "Human demonstration data captured with gloves and a robotic hand at customer laundries, run through simulation on real data and into the robot model. Five avenues including an NSF research center membership.",
+        "tool": "Sonnet Robotics hand, Trossen arms, Manus gloves",
+        "outcome": "Program under way",
+        "source": "Cloth Manipulation R&D"
+    }
+];
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   function fmt(d) { var p = d.split('-'); return MONTHS[+p[1] - 1] + ' ' + p[0]; }
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -355,6 +929,7 @@
     if (e.type === 'chart') { out.push(chartInterlude()); i++; continue; }
     if (e.type === 'brain') { out.push(brainInterlude()); i++; continue; }
     if (e.type === 'roi') { out.push(roiInterlude()); i++; continue; }
+    if (e.type === 'curve') { out.push(curveInterlude()); i++; continue; }
     var left = null, right = null;
     if (e.side === 'ai') left = e; else right = e;
     var n = EVENTS[i + 1];
@@ -568,6 +1143,108 @@
     hit.addEventListener('touchstart', show, { passive: true }); hit.addEventListener('touchmove', show, { passive: true }); hit.addEventListener('touchend', hide);
   }
 
+
+  function curveInterlude() {
+    var counts = [0, 0, 0, 0, 0, 0];
+    WINS.forEach(function (w) { counts[w.level]++; });
+    var h = '<section class="interlude" id="curve" aria-label="The enterprise learning curve">' +
+      '<div class="eyebrow">Dober &middot; every AI win we could find &middot; ' + WINS.length + ' examples, scored 1 to 5 on how hard it was to put in place</div>' +
+      '<h2>The learning curve is made of small wins</h2>' +
+      '<p class="lede">Each dot is one place a Dober or Spindle person put AI to work on a real part of their job. Height is how hard it was to implement, from a typed prompt to a production system. Most are small. A few are big. All of them taught us something, and the big ones only happened because the small ones came first.</p>' +
+      '<div class="levels">';
+    LEVELS.forEach(function (L) { h += '<div class="lvl lvl-' + L[0] + '"><div class="n">' + counts[L[0]] + '</div><div class="t">Level ' + L[0] + ' &middot; ' + L[1] + '</div><div class="s">' + L[2] + '</div></div>'; });
+    h += '</div>' +
+      '<div class="chart-head"><div class="legend"><span class="dober"><i></i> Dober business teams</span><span class="spindle"><i></i> Spindle engineering</span><span class="ceo"><i></i> CEO</span><span><i style="width:22px;height:0;border-top:2px dashed var(--muted);background:none"></i> Average difficulty, by half year</span></div></div>' +
+      '<div class="curve-wrap" id="curve-chart"></div>' +
+      '<p class="thesis">If you are not using it, you are not learning. If you are not learning, you are not advancing.</p>' +
+      '<div class="wins">';
+    for (var L = 5; L >= 1; L--) {
+      var list = WINS.filter(function (w) { return w.level === L; }).sort(function (a, b) { return a.d < b.d ? -1 : 1; });
+      if (!list.length) continue;
+      h += '<details' + (L >= 4 ? ' open' : '') + '><summary>Level ' + L + ' &middot; ' + LEVELS[L - 1][1] + ' <span class="count">' + list.length + ' win' + (list.length === 1 ? '' : 's') + '</span> <span class="desc">' + LEVELS[L - 1][2] + '</span></summary><div class="win-grid">';
+      list.forEach(function (w) {
+        h += '<div class="win-card ' + w.team + '"><div class="who"><span><i></i>' + esc(w.who) + '</span><span>' + fmt(w.d) + '</span></div><h4>' + esc(w.title) + '</h4><p>' + esc(w.what) + '</p>' +
+          '<div class="meta">' + (w.tool ? 'Tool: ' + esc(w.tool) + '. ' : '') + (w.outcome ? 'Result: ' + esc(w.outcome) + '. ' : '') + (w.source ? 'Source: ' + esc(w.source) + '.' : '') + '</div></div>';
+      });
+      h += '</div></details>';
+    }
+    h += '</div></section>';
+    return h;
+  }
+
+  function drawCurve() {
+    var host = document.getElementById('curve-chart');
+    if (!host) return;
+    var W = 1000, H = 420, L = 118, R = 24, T = 16, B = 36;
+    var pw = W - L - R, ph = H - T - B;
+    var n = END - START;
+    var bandH = ph / 5;
+    function x(i) { return L + (i / n) * pw; }
+    function yLevel(lv) { return T + ph - (lv - 0.5) * bandH; }
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Scatter of Dober AI wins by date and implementation difficulty">';
+    for (var lv = 1; lv <= 5; lv++) {
+      var yTop = T + ph - lv * bandH;
+      if (lv % 2 === 1) s += '<rect class="band" x="' + L + '" y="' + yTop + '" width="' + pw + '" height="' + bandH + '"></rect>';
+      s += '<text class="band-label" x="' + (L - 10) + '" y="' + (yLevel(lv) - 2) + '" text-anchor="end">' + lv + ' &middot; ' + LEVELS[lv - 1][1] + '</text>';
+    }
+    s += '<g class="axis">';
+    for (var yr = 2023; yr <= 2026; yr++) { var xi = x(mIndex(yr + '-01') - START); var xm = x(Math.min(n, mIndex(yr + '-07') - START) - (yr === 2026 ? 1.5 : 0)); s += '<line x1="' + xi + '" x2="' + xi + '" y1="' + T + '" y2="' + (T + ph + 5) + '"></line><text x="' + xm + '" y="' + (T + ph + 20) + '" text-anchor="middle">' + yr + '</text>'; }
+    s += '<text x="' + x(0) + '" y="' + (T + ph + 20) + '">Nov 2022</text></g>';
+    // Place dots: each level gets three rows; within a row dots keep an 18px gap and stay inside the plot.
+    var ROWS = 3, GAP = 18, DY = 19;
+    var circles = '';
+    for (var lv = 1; lv <= 5; lv++) {
+      var group = WINS.map(function (w, idx) { return { w: w, idx: idx, i: mIndex(w.d) - START }; }).filter(function (d) { return d.w.level === lv; }).sort(function (a, b) { return a.i - b.i; });
+      var rows = [[], [], []];
+      group.forEach(function (d, j) { rows[j % ROWS].push(d); });
+      rows.forEach(function (row, r) {
+        var xs = row.map(function (d) { return x(d.i); });
+        for (var j = 1; j < xs.length; j++) xs[j] = Math.max(xs[j], xs[j - 1] + GAP);
+        if (xs.length) xs[xs.length - 1] = Math.min(xs[xs.length - 1], L + pw - 10);
+        for (j = xs.length - 2; j >= 0; j--) xs[j] = Math.min(xs[j], xs[j + 1] - GAP);
+        row.forEach(function (d, j) {
+          var cy = yLevel(lv) + (r - 1) * DY * (group.length > 1 ? 1 : 0);
+          circles += '<circle class="win ' + d.w.team + '" data-i="' + d.idx + '" cx="' + Math.max(L + 10, xs[j]).toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="8" tabindex="0"><title>' + esc(d.w.title) + '</title></circle>';
+        });
+      });
+    }
+    // Trend: average level per half year, as a dashed guide
+    var buckets = {};
+    WINS.forEach(function (w) { var i = mIndex(w.d) - START; var b = Math.floor(i / 6); (buckets[b] = buckets[b] || []).push(w.level); });
+    var keys = Object.keys(buckets).map(Number).sort(function (a, b) { return a - b; });
+    if (keys.length > 1) {
+      var tp = '';
+      keys.forEach(function (b, j) { var arr = buckets[b]; var avg = arr.reduce(function (a, c) { return a + c; }, 0) / arr.length; var xi = x(Math.min(n, b * 6 + 3)); tp += (j ? ' L' : 'M') + xi.toFixed(1) + ' ' + yLevel(avg).toFixed(1); });
+      s += '<path class="trend" d="' + tp + '"></path>';
+    }
+    s += circles + '</svg><div class="tooltip wide" id="curve-tip" hidden></div>';
+    host.innerHTML = s;
+    var tip = host.querySelector('#curve-tip'), svg = host.querySelector('svg');
+    var current = null;
+    function show(el) {
+      var w = WINS[+el.getAttribute('data-i')];
+      if (current) current.classList.remove('active');
+      current = el; el.classList.add('active');
+      var rect = host.getBoundingClientRect(), sr = svg.getBoundingClientRect();
+      var px = sr.left - rect.left + (+el.getAttribute('cx') / W) * sr.width;
+      var py = sr.top - rect.top + (+el.getAttribute('cy') / H) * sr.height;
+      tip.hidden = false;
+      tip.innerHTML = '<b>' + fmt(w.d) + ' &middot; Level ' + w.level + ' &middot; ' + esc(w.who) + '</b><p><strong>' + esc(w.title) + '</strong></p><p>' + esc(w.what) + '</p>' + (w.outcome ? '<p>Result: ' + esc(w.outcome) + '</p>' : '');
+      var th = tip.offsetHeight;
+      tip.style.left = Math.max(150, Math.min(rect.width - 150, px)) + 'px';
+      tip.style.top = (py - th - 14 > 0 ? py - th - 14 : py + 16) + 'px';
+    }
+    function hide() { if (current) current.classList.remove('active'); current = null; tip.hidden = true; }
+    host.querySelectorAll('circle.win').forEach(function (c) {
+      c.addEventListener('mouseenter', function () { show(c); });
+      c.addEventListener('focus', function () { show(c); });
+      c.addEventListener('click', function (ev) { ev.stopPropagation(); show(c); });
+      c.addEventListener('mouseleave', hide);
+      c.addEventListener('blur', hide);
+    });
+    svg.addEventListener('click', hide);
+  }
+
   // ---------- Dober Brain ----------
   function brainInterlude() {
     var sources = ['ERP and orders', 'CRM and sales calls', 'Lab and formulation records', 'Meeting notes and transcripts', 'Email and chat', 'Plant, quality and service data'];
@@ -619,6 +1296,7 @@
   }
   drawChart();
   drawRoi();
+  drawCurve();
 })();
 </script>
 </body>
