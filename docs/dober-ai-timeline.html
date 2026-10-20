@@ -270,7 +270,7 @@
   .hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--grad-swoosh); }
   .hero h1 em { background: var(--grad-swoosh); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .timeline::before { background: var(--grad-swoosh-v); }
-  .year span { background: var(--grad-deep); color: #ffffff; }
+  .year span { background: var(--grad-deep); color: #ffffff; position: relative; z-index: 2; box-shadow: 0 0 0 6px var(--bg); }
   .card.ai, .card.dober { border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
   .card.ai::before, .card.dober::before { content: ""; position: absolute; top: -1px; bottom: -1px; width: 5px; }
   .card.ai::before { left: -1px; border-radius: 6px 0 0 6px; background: var(--grad-ai); }
