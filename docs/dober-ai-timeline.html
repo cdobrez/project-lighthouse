@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dober AI-First Journey</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: one vertical spine. Left of it, the AI world. Right of it, what Dober did. Full-width interludes for the revenue chart and the Dober Brain. */
+  :root {
+    --bg: #f3f5f7;
+    --surface: #ffffff;
+    --fg: #16202a;
+    --muted: #5b6977;
+    --line: #d6dde4;
+    --spine: #9fb0bf;
+    --ai: #2f5f9e;
+    --ai-soft: #e3ecf8;
+    --ai-ink: #1f477a;
+    --dober: #c2552d;
+    --dober-soft: #fbe9e0;
+    --dober-ink: #9a4020;
+    --series-openai: #2f5f9e;
+    --series-anthropic: #c2552d;
+    --grid: #e4e9ee;
+    --shade: rgba(194, 85, 45, 0.08);
+    --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    --body: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121a22; --surface: #1a242e; --fg: #e9eef3; --muted: #a3b1bd; --line: #2d3b48; --spine: #4a5a69;
+      --ai: #4f8ad8; --ai-soft: #1d2f47; --ai-ink: #a9c6ee;
+      --dober: #e0703f; --dober-soft: #3b241a; --dober-ink: #f1b597;
+      --series-openai: #4f8ad8; --series-anthropic: #e0703f; --grid: #26323e; --shade: rgba(224, 112, 63, 0.12);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121a22; --surface: #1a242e; --fg: #e9eef3; --muted: #a3b1bd; --line: #2d3b48; --spine: #4a5a69;
+    --ai: #4f8ad8; --ai-soft: #1d2f47; --ai-ink: #a9c6ee;
+    --dober: #e0703f; --dober-soft: #3b241a; --dober-ink: #f1b597;
+    --series-openai: #4f8ad8; --series-anthropic: #e0703f; --grid: #26323e; --shade: rgba(224, 112, 63, 0.12);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+  a { color: var(--ai); }
+  h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.05; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+  /* Header */
+  .hero { padding-block: 40px 24px; border-bottom: 1px solid var(--line); }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .hero h1 { font-size: clamp(42px, 7vw, 84px); font-weight: 700; letter-spacing: -0.01em; margin-top: 6px; }
+  .hero h1 em { font-style: normal; color: var(--dober); }
+  .hero p.lede { max-width: 62ch; font-size: 17px; color: var(--muted); margin: 14px 0 0; }
+  .keys { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 22px; }
+  .key { display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-size: 18px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; }
+  .key i { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+  .key.ai i { background: var(--ai); }
+  .key.dober i { background: var(--dober); }
+  .key small { font-family: var(--body); font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); font-size: 13px; }
+
+  /* Sticky year rail */
+  .rail { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .rail .wrap { display: flex; align-items: center; gap: 4px; overflow-x: auto; padding-block: 8px; scrollbar-width: none; }
+  .rail .wrap::-webkit-scrollbar { display: none; }
+  .rail a { font-family: var(--display); font-weight: 600; font-size: 17px; letter-spacing: 0.04em; text-decoration: none; color: var(--muted); padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
+  .rail a:hover, .rail a:focus-visible { color: var(--fg); background: var(--surface); outline: none; box-shadow: inset 0 0 0 1px var(--line); }
+  .rail a.jump { margin-left: auto; color: var(--dober); }
+  .rail .cols { display: none; margin-left: 20px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); gap: 16px; }
+  .rail .cols b { color: var(--fg); font-weight: 500; }
+  @media (min-width: 760px) { .rail .cols { display: inline-flex; } }
+
+  /* Timeline grid */
+  .timeline { position: relative; padding-block: 32px 48px; }
+  .timeline::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: var(--spine); transform: translateX(-50%); }
+  .row { display: grid; grid-template-columns: 1fr 72px 1fr; gap: 0 12px; align-items: start; margin-bottom: 26px; }
+  .row .cell { min-width: 0; }
+  .row .cell.left { grid-column: 1; }
+  .row .cell.right { grid-column: 3; }
+  .row .pin { grid-column: 2; display: flex; justify-content: center; padding-top: 18px; }
+  .pin span { width: 14px; height: 14px; border-radius: 50%; background: var(--bg); border: 3px solid var(--spine); box-shadow: 0 0 0 4px var(--bg); }
+  .pin span.ai { border-color: var(--ai); }
+  .pin span.dober { border-color: var(--dober); }
+  .pin span.both { border-color: var(--ai); background: var(--dober); }
+
+  .year { grid-column: 1 / -1; display: flex; justify-content: center; margin: 24px 0 30px; scroll-margin-top: 70px; }
+  .year span { font-family: var(--display); font-weight: 700; font-size: 34px; letter-spacing: 0.06em; background: var(--fg); color: var(--bg); padding: 2px 22px; border-radius: 4px; }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px 16px; position: relative; }
+  .card .when { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .card .when .side { display: none; }
+  .card h3 { font-size: 22px; font-weight: 600; margin-top: 6px; }
+  .card p { margin: 8px 0 0; color: var(--fg); }
+  .card p.sub { color: var(--muted); font-size: 14px; }
+  .card.ai { border-left: 4px solid var(--ai); }
+  .card.ai .when { color: var(--ai-ink); }
+  .card.dober { border-right: 4px solid var(--dober); }
+  .card.dober .when { color: var(--dober-ink); }
+  .card.milestone { background: var(--ai-soft); }
+  .card.milestone.dober { background: var(--dober-soft); }
+  .card.placeholder { border-style: dashed; background: transparent; }
+  .card.placeholder h3 { color: var(--muted); }
+  .tag { display: inline-block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; }
+  .tag.inflection { color: var(--dober-ink); background: var(--dober-soft); border-color: transparent; }
+  .tag.todo { color: var(--muted); }
+  .card ul { margin: 8px 0 0; padding-left: 18px; }
+  .card li { margin-top: 4px; }
+
+  /* Left cards point right, right cards point left */
+  .card.ai::after, .card.dober::after { content: ""; position: absolute; top: 20px; width: 10px; height: 10px; background: inherit; border: 1px solid var(--line); transform: rotate(45deg); }
+  .card.ai::after { right: -6px; border-left: 0; border-bottom: 0; }
+  .card.dober::after { left: -6px; border-right: 0; border-top: 0; }
+
+  /* Full-width interludes */
+  .interlude { grid-column: 1 / -1; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 22px 22px 18px; margin: 10px 0 30px; position: relative; }
+  .interlude h2 { font-size: 34px; font-weight: 700; }
+  .interlude .lede { color: var(--muted); max-width: 70ch; margin: 8px 0 0; }
+  .interlude .eyebrow { margin-bottom: 4px; }
+
+  /* Chart */
+  .chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 12px; margin-top: 18px; }
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+  .legend .openai i { background: var(--series-openai); }
+  .legend .anthropic i { background: var(--series-anthropic); }
+  .chart-wrap { position: relative; margin-top: 10px; }
+  .chart-wrap svg { width: 100%; height: auto; display: block; font-family: var(--body); }
+  .chart-wrap .axis text { fill: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .chart-wrap .grid line { stroke: var(--grid); stroke-width: 1; }
+  .chart-wrap .axis line { stroke: var(--line); }
+  .chart-wrap .series-openai { stroke: var(--series-openai); }
+  .chart-wrap .series-anthropic { stroke: var(--series-anthropic); }
+  .chart-wrap .end-label { font-size: 13px; font-weight: 600; fill: var(--fg); }
+  .chart-wrap .end-sub { font-size: 11px; fill: var(--muted); }
+  .chart-wrap .shade { fill: var(--shade); }
+  .chart-wrap .shade-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; fill: var(--dober-ink); }
+  .chart-wrap .marker { stroke: var(--dober); stroke-dasharray: 3 4; }
+  .chart-wrap .crosshair { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; }
+  .chart-wrap .dot { stroke: var(--surface); stroke-width: 2; }
+  .tooltip { position: absolute; pointer-events: none; background: var(--fg); color: var(--bg); border-radius: 6px; padding: 8px 10px; font-size: 12px; line-height: 1.4; min-width: 150px; transform: translate(-50%, 0); white-space: nowrap; }
+  .tooltip b { font-family: var(--mono); font-weight: 500; letter-spacing: 0.04em; }
+  .tooltip .r { display: flex; justify-content: space-between; gap: 14px; font-variant-numeric: tabular-nums; }
+  .tooltip .r i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .note { font-size: 12.5px; color: var(--muted); margin-top: 12px; max-width: 90ch; }
+  details.table { margin-top: 10px; font-size: 13px; }
+  details.table summary { cursor: pointer; color: var(--ai); }
+  details.table table { border-collapse: collapse; margin-top: 8px; font-variant-numeric: tabular-nums; }
+  details.table th, details.table td { text-align: right; padding: 3px 12px 3px 0; border-bottom: 1px solid var(--line); }
+  details.table th:first-child, details.table td:first-child { text-align: left; font-family: var(--mono); font-size: 12px; }
+  .table-scroll { overflow-x: auto; }
+
+  /* Dober Brain */
+  .brain-wrap { margin-top: 18px; overflow-x: auto; }
+  .brain-wrap svg { width: 100%; min-width: 640px; height: auto; display: block; font-family: var(--body); }
+  .brain-wrap .node { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+  .brain-wrap .node-label { font-size: 13px; fill: var(--fg); font-weight: 500; }
+  .brain-wrap .node-sub { font-size: 11px; fill: var(--muted); }
+  .brain-wrap .flow { stroke: var(--ai); stroke-width: 2; fill: none; }
+  .brain-wrap .flow-todo { stroke: var(--dober); stroke-width: 2; fill: none; stroke-dasharray: 6 5; }
+  .brain-wrap .hub { fill: var(--ai-soft); stroke: var(--ai); stroke-width: 2; }
+  .brain-wrap .hub-label { font-family: var(--display); font-size: 20px; font-weight: 600; fill: var(--ai-ink); letter-spacing: 0.02em; }
+  .brain-wrap .brain { fill: var(--dober-soft); stroke: var(--dober); stroke-width: 2.5; }
+  .brain-wrap .gyri { fill: none; stroke: var(--dober); stroke-width: 1.6; opacity: 0.8; stroke-linecap: round; }
+  .brain-wrap .brain-label { font-family: var(--display); font-size: 30px; font-weight: 700; fill: var(--dober-ink); }
+  .brain-wrap .todo-node { fill: transparent; stroke: var(--dober); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  .brain-wrap .todo-label { font-size: 13px; fill: var(--dober-ink); font-weight: 500; }
+  .brain-wrap .section-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; fill: var(--muted); }
+  .brain-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 18px; }
+  .brain-cols div { min-width: 0; }
+  .brain-cols h3 { font-size: 20px; font-weight: 600; }
+  .brain-cols p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+  .brain-cols .done h3 { color: var(--ai-ink); }
+  .brain-cols .todo h3 { color: var(--dober-ink); }
+
+  /* Footer */
+  .foot { padding-block: 24px 48px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+  .foot p { max-width: 90ch; margin: 0 0 8px; }
+
+  /* Phone: one column, with a side chip on every card */
+  @media (max-width: 759px) {
+    .timeline::before { left: 18px; }
+    .row { grid-template-columns: 40px 1fr; gap: 0 10px; margin-bottom: 18px; }
+    .row .pin { grid-column: 1; grid-row: 1 / span 2; padding-top: 16px; }
+    .row .cell.left, .row .cell.right { grid-column: 2; }
+    .row .cell.right { margin-top: 10px; }
+    .row .cell.right:first-of-type { margin-top: 0; }
+    .year { grid-column: 1 / -1; justify-content: flex-start; padding-left: 0; }
+    .year span { font-size: 26px; }
+    .card.dober { border-right: 0; border-left: 4px solid var(--dober); }
+    .card.ai::after, .card.dober::after { display: none; }
+    .card .when .side { display: inline; }
+    .interlude { grid-column: 1 / -1; padding: 16px 14px 14px; }
+    .interlude h2 { font-size: 28px; }
+    .hero h1 { font-size: 44px; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .card { transition: transform 160ms ease, box-shadow 160ms ease; }
+    .card:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); }
+  }
+  :focus-visible { outline: 2px solid var(--ai); outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Dober &middot; AI-First Enterprise &middot; November 2022 to October 2026</div>
+    <h1>Four years of <em>AI first</em> at Dober</h1>
+    <p class="lede">The world changed on November 30, 2022. This timeline runs from that night to today. Left of the spine is what happened in AI. Right of the spine is what Dober did about it: experiments, trial and error, and a commitment to put the technology to work.</p>
+    <div class="keys">
+      <span class="key ai"><i></i> The AI world <small>inflection points, left side</small></span>
+      <span class="key dober"><i></i> Dober <small>what we did, right side</small></span>
+    </div>
+  </div>
+</header>
+
+<nav class="rail" aria-label="Jump to year">
+  <div class="wrap">
+    <a href="#y2022">2022</a><a href="#y2023">2023</a><a href="#y2024">2024</a><a href="#y2025">2025</a><a href="#y2026">2026</a>
+    <span class="cols"><span><b>Left</b> AI world</span><span><b>Right</b> Dober</span></span>
+    <a class="jump" href="#brain">Dober Brain &darr;</a>
+  </div>
+</nav>
+
+<main class="wrap">
+  <section class="timeline" id="timeline" aria-label="Timeline"></section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p><strong>How to read the chart.</strong> Revenue lines show annualized run rate (the latest month times twelve), not booked annual revenue. Points are drawn from company disclosures and press reports (Bloomberg, Reuters, CNBC, The Information, Financial Times, Axios). Months between disclosed points are interpolated. The September 2026 OpenAI figure uses the lower number OpenAI gave investors, about $50B, rather than the roughly $70B that circulated earlier.</p>
+    <p><strong>How to edit.</strong> Every entry lives in the <code>EVENTS</code> list in the page script. Add a line with a date, a side (<code>ai</code> or <code>dober</code>), a title and a body. Entries marked <code>placeholder: true</code> are waiting for details from the Dober team.</p>
+    <p>Dober internal. Last updated October 20, 2026.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  // Date format: 'YYYY-MM'. Side: 'ai' (left) or 'dober' (right).
+  // milestone: true gives the card a tinted background. placeholder: true marks an entry that still needs details.
+  // type: 'chart' or 'brain' renders a full-width interlude instead of a card.
+  var EVENTS = [
+    // ---------- 2022 ----------
+    { d: '2022-11', side: 'ai', milestone: true, title: 'ChatGPT launches on GPT-3.5', body: 'OpenAI releases ChatGPT on November 30. One million users in five days, 100 million within two months. Generative AI becomes a consumer product overnight.', tag: 'Inflection' },
+
+    // ---------- 2023 ----------
+    { d: '2023-01', side: 'ai', title: 'Big Tech commits', body: 'Microsoft invests $10B in OpenAI and ships Bing Chat weeks later. Google declares a "code red." The race is on.' },
+    { d: '2023-01', side: 'dober', milestone: true, title: 'Quarterly AI Cash Awards begin', body: 'Up to $5,000 per quarter, paid in $100 increments, handed out in front of the whole company. The Q1 winners were basic: using AI to help write an email counted. The goal was simple: get people using the tools while we figured out what they could do.', tag: 'Adoption' },
+    { d: '2023-02', side: 'ai', title: 'Open weights escape the lab', body: 'Meta releases LLaMA to researchers. The weights leak within a week and the open-model movement starts.' },
+    { d: '2023-03', side: 'ai', milestone: true, title: 'GPT-4, Claude, Bard and photoreal images', body: 'GPT-4 passes the bar exam. Anthropic ships the first Claude. Google opens Bard. Midjourney v5 produces the "Pope in a puffer jacket" image that fools the internet. Images stop looking like AI. The first Cursor AI code editor also ships this month.' },
+    { d: '2023-03', side: 'dober', milestone: true, title: 'ChatGPT and Google Bard rolled out company-wide', body: 'Dober gave the whole company access to ChatGPT and Google Bard (now Gemini) in 2023, well ahead of most peers. Everyone had a seat and a reason to try it.', tag: 'Tools' },
+    { d: '2023-05', side: 'ai', title: 'The chips become the story', body: 'Nvidia crosses a $1 trillion market cap on AI demand. Google I/O goes all-in on generative AI across Search, Workspace and Android.' },
+    { d: '2023-06', side: 'dober', milestone: true, title: 'AI Vision Statement', body: 'Dober publishes an AI vision statement committing the company to leveraging this technology across the business. We did not yet call it "AI first," but this is where the commitment was made.', tag: 'Commitment', placeholder: true, ph: 'Add the exact month and a line or two from the statement.' },
+    { d: '2023-07', side: 'ai', title: 'Open commercial models and long context', body: 'Llama 2 ships under a commercial license. Claude 2 reads 100,000 tokens at a time, roughly a 75,000-word document. ChatGPT Code Interpreter runs real Python.' },
+    { d: '2023-07', side: 'dober', title: 'The awards bar rises every quarter', body: 'By Q2 and Q3, writing an email with AI no longer won. Awards went to people using AI on harder, more creative problems. Same trick never won twice. Most of 2023 was exactly this: just getting out there and using it.' },
+    { d: '2023-09', side: 'ai', title: 'AI gets eyes, ears and a voice', body: 'ChatGPT adds voice conversations and image understanding (GPT-4V). DALL-E 3 is built into ChatGPT. Multimodal becomes normal.' },
+    { d: '2023-09', side: 'dober', milestone: true, title: 'AI enters chemical formulation', body: 'Dober starts using AI on chemical formulation work in 2023. This continues through 2024 and is still in daily use today.', tag: 'Core business', placeholder: true, ph: 'Add which product lines or formulation tasks, and a result (time saved, iterations cut).' },
+    { d: '2023-11', side: 'ai', milestone: true, title: 'DevDay, Copilot and the five-day coup', body: 'OpenAI DevDay introduces GPT-4 Turbo, custom GPTs and the Assistants API, the first agent building blocks. Microsoft 365 Copilot goes on sale November 1. Sam Altman is fired and rehired within five days.' },
+    { d: '2023-12', side: 'ai', title: 'Google answers with Gemini', body: 'Gemini 1.0 is announced as a natively multimodal model. Bard will take the Gemini name within weeks.' },
+
+    // ---------- 2024 ----------
+    { d: '2024-02', side: 'ai', milestone: true, title: 'Video becomes believable', body: 'OpenAI previews Sora: minute-long, photoreal video from a text prompt. Gemini 1.5 reads a million tokens of context. AI video goes from novelty to credible.' },
+    { d: '2024-03', side: 'ai', milestone: true, title: 'Claude 3 beats GPT-4; "AI software engineer" demos', body: 'Claude 3 Opus is the first model to pass GPT-4 on major benchmarks. Cognition demos Devin, an autonomous coding agent. "Agent" enters the business vocabulary.' },
+    { d: '2024-03', side: 'dober', milestone: true, title: 'Outside engagement: how to apply agents to Dober', body: 'We hired an outside firm to tell us how to apply agents to the business. Every knowledge worker in the company took a survey. The result was a 90-page report that described who we were and what we did. It was ahead of its time for agents, and frankly not very helpful. The lesson: the technology was not ready, and nobody could consult their way to it.', tag: 'Lesson learned', placeholder: true, ph: 'Confirm the month and the firm, if you want it named.' },
+    { d: '2024-05', side: 'ai', title: 'Real-time voice and AI in Search', body: 'GPT-4o talks, listens and sees in real time. Google puts AI Overviews on top of search results for everyone.' },
+    { d: '2024-06', side: 'ai', title: 'Claude 3.5 Sonnet and Apple Intelligence', body: 'Claude 3.5 Sonnet becomes the developer favorite and introduces Artifacts. Apple announces Apple Intelligence for iPhone and Mac.' },
+    { d: '2024-06', side: 'dober', milestone: true, title: 'Spindle engineers adopt Cursor', body: 'Our Spindle engineering team moves to Cursor, the AI-native code editor, before any of the agentic coding tools existed. First time AI wrote production code at Dober.', tag: 'Engineering', placeholder: true, ph: 'Confirm the month Spindle standardized on Cursor.' },
+    { d: '2024-09', side: 'ai', milestone: true, title: 'Reasoning models', body: 'OpenAI o1 "thinks" before it answers, trading seconds of compute for much better math, science and code. A new scaling axis opens up.' },
+    { d: '2024-10', side: 'ai', title: 'Models operate a computer', body: 'Anthropic ships computer use in beta: Claude moves a mouse, clicks and types inside a desktop. Agents stop being a slide and start being a demo.' },
+    { d: '2024-11', side: 'ai', milestone: true, title: 'Model Context Protocol', body: 'Anthropic open-sources MCP, a standard way to plug models into tools, files and company data. Within months OpenAI, Google and Microsoft adopt it. The plumbing for enterprise agents.' },
+    { d: '2024-11', side: 'dober', title: 'AI plugged into everyday workflows', body: 'Alongside the award program, Dober wires AI into specific workflows to save time.', placeholder: true, ph: 'List the workflows (for example: quoting, SDS and label drafting, customer support replies, sales call summaries) and the time saved.' },
+    { d: '2024-12', side: 'ai', title: '"The agentic era"', body: 'Google launches Gemini 2.0 and Veo 2 and names the agentic era. OpenAI releases Sora and announces o3. Anthropic closes the year near a $1B run rate.' },
+
+    // ---------- 2025 ----------
+    { d: '2025-01', side: 'ai', milestone: true, title: 'DeepSeek shock, Operator, Stargate', body: 'DeepSeek R1 matches frontier reasoning at a fraction of the training cost. Nvidia loses about $600B in one day. OpenAI ships Operator, a browser agent, and announces the $500B Stargate build-out.' },
+    { d: '2025-02', side: 'ai', milestone: true, title: 'Claude Code arrives', body: 'Anthropic releases Claude Code (February 24) with Claude 3.7 Sonnet: an agent that lives in the terminal, reads the whole codebase and does the work. OpenAI ships Deep Research. Agentic coding becomes the entry point for enterprise AI.', tag: 'Inflection' },
+    { d: '2025-02', side: 'dober', milestone: true, title: 'Spindle moves from Cursor to Claude Code', body: 'Spindle engineers pick up Claude Code as soon as it ships and start handing whole tasks to an agent instead of autocompleting lines. This is the moment coding at Dober became agentic.', tag: 'Engineering', placeholder: true, ph: 'Add first projects shipped with Claude Code and any throughput numbers.' },
+    { d: '2025-03', side: 'ai', title: 'Images go mainstream, again', body: 'GPT-4o native image generation adds a million users in an hour (the Studio Ghibli wave). Gemini 2.5 Pro leads benchmarks. Manus demos a general-purpose agent.' },
+    { d: '2025-05', side: 'ai', milestone: true, title: 'Claude 4, Veo 3 and the coding-agent land grab', body: 'Claude Opus 4 and Sonnet 4 ship with Claude Code generally available. Google Veo 3 generates video with synchronized sound. OpenAI launches Codex. Cursor passes $500M in annual revenue at a $9.9B valuation.' },
+    { d: '2025-07', side: 'ai', title: 'Agents in the chat window', body: 'ChatGPT Agent browses, fills forms and builds spreadsheets on its own. Grok 4 and the open-weight Kimi K2 arrive.' },
+    { d: '2025-08', side: 'ai', title: 'GPT-5 and open-weight OpenAI', body: 'GPT-5 launches August 7. Claude Opus 4.1 follows. OpenAI releases gpt-oss, its first open-weight models since GPT-2. Anthropic passes a $5B run rate.' },
+    { d: '2025-09', side: 'ai', title: '30-hour autonomous runs', body: 'Claude Sonnet 4.5 works for 30 hours on a single task. Anthropic raises $13B at a $183B valuation. Sora 2 ships as a social video app.' },
+    { d: '2025-10', side: 'ai', title: 'Agent platforms converge', body: 'OpenAI DevDay brings apps inside ChatGPT and AgentKit. Anthropic ships Skills, Haiku 4.5 and Claude Code on the web. Every vendor now sells the same thing: agents that do enterprise work.' },
+    { d: '2025-11', side: 'ai', milestone: true, title: 'The agent inflection', body: 'Gemini 3, Claude Opus 4.5 and GPT-5.1 ship within weeks of one another. Agents become reliable enough for enterprises to jump in with both feet. From here, revenue at the model labs goes vertical (see chart).', tag: 'Inflection' },
+    { d: '2025-11', type: 'chart' },
+    { d: '2025-12', side: 'ai', title: 'Year-end scorecard', body: 'GPT-5.2 ships. OpenAI ends the year above a $20B run rate; Anthropic at about $9B. Both numbers will look small within months.' },
+    { d: '2025-12', side: 'dober', title: 'More of what we did in 2025', body: 'Space for additional 2025 Dober milestones.', placeholder: true, ph: 'Ideas: award program highlights, formulation wins, customer-facing AI, training sessions, policy decisions.' },
+
+    // ---------- 2026 ----------
+    { d: '2026-01', side: 'ai', milestone: true, title: 'OpenClaw goes viral', body: 'Peter Steinberger\'s weekend project (first Clawdbot, then Moltbot, then OpenClaw) becomes an open-source personal agent that runs on your own machine and answers on WhatsApp and iMessage. 100,000+ GitHub stars in a week. Mac minis sell out as people build always-on agent boxes. Anthropic launches Claude Cowork the same month.', tag: 'Inflection' },
+    { d: '2026-01', side: 'dober', milestone: true, title: 'OpenClaw internal lab: eight Mac minis', body: 'Dober buys eight Mac minis and stands up an internal OpenClaw lab. Agents run around the clock on real Dober activities so we can learn what they are good at, where they break and how to keep them safe.', tag: 'Agents', placeholder: true, ph: 'Add the activities the lab is running and the early results.' },
+    { d: '2026-02', side: 'ai', title: 'Claude 4.6 and a $380B Anthropic', body: 'Claude Opus 4.6 and Sonnet 4.6 ship. Anthropic raises $30B at a $380B valuation on a $14B run rate. Both labs run Super Bowl ads.' },
+    { d: '2026-02', side: 'dober', milestone: true, title: 'Claude Enterprise rolled out', body: 'After starting on ChatGPT and Gemini in 2023, Dober rolls out Claude Enterprise company-wide in early 2026: shared projects, connectors into company data and Claude Code for the engineers, all under one agreement.', tag: 'Tools', placeholder: true, ph: 'Confirm the month, seat count and the first connected data sources.' },
+    { d: '2026-04', side: 'ai', milestone: true, title: 'Mythos, Glasswing, Opus 4.7, GPT-5.5', body: 'Anthropic announces Claude Mythos Preview (April 7) and withholds it from public release, offering it through Project Glasswing to AWS, Apple, Google, Microsoft and Nvidia to find vulnerabilities in critical software. Opus 4.7 ships April 16. OpenAI answers with GPT-5.5. Anthropic reaches a $30B run rate.' },
+    { d: '2026-05', side: 'ai', title: 'Anthropic passes OpenAI on run rate', body: 'Anthropic reports a $47B run rate at its Series H, up roughly 80x in eighteen months, driven by Claude Code and enterprise API spend.' },
+    { d: '2026-06', side: 'dober', title: 'Mid-2026 at Dober', body: 'Space for what the OpenClaw lab and Claude Enterprise produced by mid-year.', placeholder: true, ph: 'Ideas: first agents in production, formulation assistant, sales or service automations, governance rules.' },
+    { d: '2026-07', side: 'ai', milestone: true, title: 'The Claude 5 generation', body: 'Claude Sonnet 5 (June 30) and Opus 5 (July 24) arrive. Anthropic tells investors its run rate reached $65B in July. Google ships Gemini 3.6 Flash.' },
+    { d: '2026-09', side: 'ai', milestone: true, title: 'GPT-6, Claude 5.5, Gemini 4', body: 'OpenAI launches GPT-6 (September 3). Anthropic ships Claude Fable 5.1 (September 1), Opus 5.5 (September 22) and Sonnet 5.5 (September 28). Google previews Gemini 4 to vetted partners. OpenAI tells investors its run rate is about $50B.' },
+    { d: '2026-10', side: 'ai', title: 'Today', body: 'Gemini 4 reaches general availability October 13. Claude Haiku 5.5 and GPT-6 Pro with parallel agents ship. Anthropic prepares an IPO with investors projecting a $110B year-end run rate. Four years after ChatGPT, agents are the product.' },
+    { d: '2026-10', side: 'dober', milestone: true, title: 'Where we are: still experimenting, still pushing', body: 'Four years in, the pattern holds: experiment, learn, commit. AI is in formulation, engineering, and daily workflows. The next job is the Dober Brain: record everything, then contextualize and connect it.', tag: 'Now' },
+    { d: '2026-10', type: 'brain' }
+  ];
+
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function fmt(d) { var p = d.split('-'); return MONTHS[+p[1] - 1] + ' ' + p[0]; }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  EVENTS.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+
+  function card(e) {
+    var cls = 'card ' + e.side + (e.milestone ? ' milestone' : '') + (e.placeholder ? ' placeholder' : '');
+    var sideName = e.side === 'ai' ? 'AI world' : 'Dober';
+    var h = '<article class="' + cls + '"><div class="when"><span>' + fmt(e.d) + '</span><span class="side">&middot; ' + sideName + '</span>';
+    if (e.tag) h += '<span class="tag' + (e.tag === 'Inflection' ? ' inflection' : '') + '">' + esc(e.tag) + '</span>';
+    if (e.placeholder) h += '<span class="tag todo">Placeholder</span>';
+    h += '</div><h3>' + esc(e.title) + '</h3><p>' + esc(e.body) + '</p>';
+    if (e.placeholder && e.ph) h += '<p class="sub">To add: ' + esc(e.ph) + '</p>';
+    h += '</article>';
+    return h;
+  }
+
+  var out = [];
+  var year = '';
+  var i = 0;
+  while (i < EVENTS.length) {
+    var e = EVENTS[i];
+    var y = e.d.slice(0, 4);
+    if (y !== year) { year = y; out.push('<div class="year" id="y' + y + '"><span>' + y + '</span></div>'); }
+    if (e.type === 'chart') { out.push(chartInterlude()); i++; continue; }
+    if (e.type === 'brain') { out.push(brainInterlude()); i++; continue; }
+    var left = null, right = null;
+    if (e.side === 'ai') left = e; else right = e;
+    var n = EVENTS[i + 1];
+    if (n && !n.type && n.d === e.d && n.side !== e.side) { if (n.side === 'ai') left = n; else right = n; i++; }
+    var pinCls = left && right ? 'both' : (left ? 'ai' : 'dober');
+    var row = '<div class="row">';
+    if (left) row += '<div class="cell left">' + card(left) + '</div>';
+    row += '<div class="pin"><span class="' + pinCls + '"></span></div>';
+    if (right) row += '<div class="cell right">' + card(right) + '</div>';
+    row += '</div>';
+    out.push(row);
+    i++;
+  }
+  document.getElementById('timeline').innerHTML = out.join('');
+  // chart is drawn at the end of this script, after its data is defined
+
+  // ---------- Revenue chart ----------
+  function chartInterlude() {
+    return '<section class="interlude" id="revenue" aria-label="Revenue run rate chart">' +
+      '<div class="eyebrow">Annualized revenue run rate, $ billions</div>' +
+      '<h2>When agents became useful, enterprises jumped in with both feet</h2>' +
+      '<p class="lede">OpenAI and Anthropic took three years to reach their first $10B run rates. After the agent inflection in late 2025, both added that much in a matter of months. Hover or tap the chart for values.</p>' +
+      '<div class="chart-head"><div class="legend"><span class="openai"><i></i> OpenAI</span><span class="anthropic"><i></i> Anthropic</span><span><i style="width:18px;height:10px;background:var(--shade);border:1px dashed var(--dober)"></i> Agent era</span></div></div>' +
+      '<div class="chart-wrap" id="chart"></div>' +
+      '<details class="table"><summary>Show the data as a table</summary><div class="table-scroll" id="chart-table"></div></details>' +
+      '<p class="note">Run rate means the most recent month of revenue multiplied by twelve. Sources: company disclosures and reporting by Bloomberg, Reuters, CNBC, The Information, Financial Times and Axios. Months between reported points are interpolated. The September 2026 OpenAI figure uses the lower number OpenAI gave investors.</p>' +
+      '</section>';
+  }
+
+  // Reported or widely cited annualized run-rate points, $B.
+  var OPENAI = [['2022-11', 0.03], ['2023-06', 0.5], ['2023-08', 1.0], ['2023-12', 1.6], ['2024-02', 2.0], ['2024-06', 3.4], ['2024-12', 5.5], ['2025-06', 10], ['2025-10', 13], ['2025-12', 20], ['2026-02', 25], ['2026-05', 26], ['2026-08', 40], ['2026-09', 50], ['2026-10', 52]];
+  var ANTHROPIC = [['2022-11', 0], ['2023-03', 0.01], ['2023-12', 0.1], ['2024-06', 0.3], ['2024-12', 1.0], ['2025-03', 1.4], ['2025-05', 3], ['2025-07', 4], ['2025-08', 5], ['2025-10', 7], ['2025-12', 9], ['2026-02', 14], ['2026-03', 19], ['2026-04', 30], ['2026-05', 47], ['2026-07', 65], ['2026-09', 74], ['2026-10', 78]];
+
+  function mIndex(d) { var p = d.split('-'); return (+p[0] - 2022) * 12 + (+p[1] - 1); }
+  var START = mIndex('2022-11'), END = mIndex('2026-10');
+  function monthLabel(idx) { var y = 2022 + Math.floor(idx / 12), m = idx % 12; return MONTHS[m] + ' ' + y; }
+
+  // Geometric interpolation between reported points so growth between them curves instead of kinking.
+  function series(pts) {
+    var out = [];
+    for (var k = 0; k < pts.length - 1; k++) {
+      var a = mIndex(pts[k][0]), b = mIndex(pts[k + 1][0]);
+      var va = Math.max(pts[k][1], 0.005), vb = Math.max(pts[k + 1][1], 0.005);
+      for (var m = a; m < b; m++) { var t = (m - a) / (b - a); out[m - START] = va * Math.pow(vb / va, t); }
+    }
+    out[END - START] = pts[pts.length - 1][1];
+    return out;
+  }
+
+  function drawChart() {
+    var host = document.getElementById('chart');
+    if (!host) return;
+    var oa = series(OPENAI), an = series(ANTHROPIC);
+    var W = 1000, H = 420, L = 44, R = 150, T = 24, B = 40;
+    var pw = W - L - R, ph = H - T - B;
+    var n = END - START;
+    var yMax = 100;
+    function x(i) { return L + (i / n) * pw; }
+    function y(v) { return T + ph - (v / yMax) * ph; }
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Line chart of OpenAI and Anthropic annualized revenue run rate from November 2022 to October 2026">';
+    // Agent-era shade from Nov 2025
+    var shadeX = x(mIndex('2025-11') - START);
+    s += '<rect class="shade" x="' + shadeX + '" y="' + T + '" width="' + (x(n) - shadeX) + '" height="' + ph + '"></rect>';
+    s += '<line class="marker" x1="' + shadeX + '" x2="' + shadeX + '" y1="' + T + '" y2="' + (T + ph) + '"></line>';
+    s += '<text class="shade-label" x="' + (shadeX + 8) + '" y="' + (T + 14) + '">Agent era, Nov 2025 &rarr;</text>';
+    // Grid and y axis
+    s += '<g class="grid">';
+    for (var g = 0; g <= yMax; g += 20) s += '<line x1="' + L + '" x2="' + (L + pw) + '" y1="' + y(g) + '" y2="' + y(g) + '"></line>';
+    s += '</g><g class="axis">';
+    for (g = 0; g <= yMax; g += 20) s += '<text x="' + (L - 8) + '" y="' + (y(g) + 4) + '" text-anchor="end">$' + g + 'B</text>';
+    for (var yr = 2023; yr <= 2026; yr++) { var xi = x(mIndex(yr + '-01') - START); var xm = x(Math.min(n, mIndex(yr + '-07') - START) - (yr === 2026 ? 1.5 : 0)); s += '<line x1="' + xi + '" x2="' + xi + '" y1="' + (T + ph) + '" y2="' + (T + ph + 5) + '"></line><text x="' + xm + '" y="' + (T + ph + 20) + '" text-anchor="middle">' + yr + '</text>'; }
+    s += '<text x="' + x(0) + '" y="' + (T + ph + 20) + '" text-anchor="start">Nov 2022</text>';
+    s += '</g>';
+    function path(arr) { var d = ''; for (var i = 0; i <= n; i++) d += (i ? ' L' : 'M') + x(i).toFixed(1) + ' ' + y(arr[i]).toFixed(1); return d; }
+    s += '<path class="series-openai" d="' + path(oa) + '" fill="none" stroke-width="2.5" stroke-linejoin="round"></path>';
+    s += '<path class="series-anthropic" d="' + path(an) + '" fill="none" stroke-width="2.5" stroke-linejoin="round"></path>';
+    // End labels
+    var eo = y(oa[n]), ea = y(an[n]);
+    if (Math.abs(eo - ea) < 30) { if (eo < ea) { eo -= 8; ea += 8; } else { ea -= 8; eo += 8; } }
+    s += '<circle class="dot" cx="' + x(n) + '" cy="' + y(oa[n]) + '" r="5" fill="var(--series-openai)"></circle>';
+    s += '<circle class="dot" cx="' + x(n) + '" cy="' + y(an[n]) + '" r="5" fill="var(--series-anthropic)"></circle>';
+    s += '<text class="end-label" x="' + (x(n) + 10) + '" y="' + (eo + 4) + '">OpenAI ~$' + Math.round(oa[n]) + 'B</text>';
+    s += '<text class="end-label" x="' + (x(n) + 10) + '" y="' + (ea + 4) + '">Anthropic ~$' + Math.round(an[n]) + 'B</text>';
+    s += '<text class="end-sub" x="' + (x(n) + 10) + '" y="' + (Math.max(eo, ea) + 20) + '">Oct 2026, est.</text>';
+    // Hover layer
+    s += '<g id="hover" style="display:none"><line class="crosshair" y1="' + T + '" y2="' + (T + ph) + '"></line><circle class="dot" r="5" fill="var(--series-openai)"></circle><circle class="dot" r="5" fill="var(--series-anthropic)"></circle></g>';
+    s += '<rect id="hit" x="' + L + '" y="' + T + '" width="' + pw + '" height="' + ph + '" fill="transparent"></rect>';
+    s += '</svg><div class="tooltip" id="tip" hidden></div>';
+    host.innerHTML = s;
+
+    var svg = host.querySelector('svg'), hit = host.querySelector('#hit'), hov = host.querySelector('#hover'), tip = host.querySelector('#tip');
+    var hl = hov.querySelector('line'), hc = hov.querySelectorAll('circle');
+    function show(ev) {
+      var pt = svg.createSVGPoint();
+      var src = ev.touches ? ev.touches[0] : ev;
+      pt.x = src.clientX; pt.y = src.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var i = Math.round(((p.x - L) / pw) * n); i = Math.max(0, Math.min(n, i));
+      var xi = x(i);
+      hov.style.display = '';
+      hl.setAttribute('x1', xi); hl.setAttribute('x2', xi);
+      hc[0].setAttribute('cx', xi); hc[0].setAttribute('cy', y(oa[i]));
+      hc[1].setAttribute('cx', xi); hc[1].setAttribute('cy', y(an[i]));
+      var rect = host.getBoundingClientRect(), sr = svg.getBoundingClientRect();
+      var px = sr.left - rect.left + (xi / W) * sr.width;
+      var py = sr.top - rect.top + (Math.min(y(oa[i]), y(an[i])) / H) * sr.height - 70;
+      tip.hidden = false;
+      tip.style.left = Math.max(80, Math.min(rect.width - 80, px)) + 'px';
+      tip.style.top = Math.max(0, py) + 'px';
+      tip.innerHTML = '<b>' + monthLabel(START + i) + '</b>' +
+        '<div class="r"><span><i style="background:var(--series-openai)"></i>OpenAI</span><span>$' + fmtB(oa[i]) + 'B</span></div>' +
+        '<div class="r"><span><i style="background:var(--series-anthropic)"></i>Anthropic</span><span>$' + fmtB(an[i]) + 'B</span></div>';
+    }
+    function hide() { hov.style.display = 'none'; tip.hidden = true; }
+    function fmtB(v) { return v < 1 ? v.toFixed(2) : v < 10 ? v.toFixed(1) : Math.round(v); }
+    hit.addEventListener('mousemove', show); hit.addEventListener('mouseleave', hide);
+    hit.addEventListener('touchstart', show, { passive: true }); hit.addEventListener('touchmove', show, { passive: true }); hit.addEventListener('touchend', hide);
+
+    // Table view: quarter-end values
+    var t = '<table><thead><tr><th>Quarter end</th><th>OpenAI ($B)</th><th>Anthropic ($B)</th></tr></thead><tbody>';
+    for (var i = 0; i <= n; i++) { var mi = START + i; var mo = mi % 12; if (mo === 11 || mo === 2 || mo === 5 || mo === 8 || i === n) t += '<tr><td>' + monthLabel(mi) + '</td><td>' + fmtB(oa[i]) + '</td><td>' + fmtB(an[i]) + '</td></tr>'; }
+    t += '</tbody></table>';
+    document.getElementById('chart-table').innerHTML = t;
+  }
+
+  // ---------- Dober Brain ----------
+  function brainInterlude() {
+    var sources = ['ERP and orders', 'CRM and sales calls', 'Lab and formulation records', 'Meeting notes and transcripts', 'Email and chat', 'Plant, quality and service data'];
+    var svg = '<svg viewBox="0 0 1000 540" role="img" aria-label="Diagram of the Dober Brain: company data sources feed a central recording system into the Dober Brain; contextualizing and connecting that data is still to be built">';
+    svg += '<text class="section-label" x="30" y="40">Company and enterprise updates</text>';
+    svg += '<text class="section-label" x="360" y="40">Built</text>';
+    svg += '<text class="section-label" x="838" y="40">Still to build</text>';
+    var top = 70, gap = 70;
+    for (var k = 0; k < sources.length; k++) {
+      var yy = top + k * gap;
+      svg += '<rect class="node" x="30" y="' + yy + '" width="230" height="46" rx="6"></rect>';
+      svg += '<text class="node-label" x="46" y="' + (yy + 28) + '">' + esc(sources[k]) + '</text>';
+      svg += '<path class="flow" d="M260 ' + (yy + 23) + ' C 310 ' + (yy + 23) + ', 310 270, 360 270" marker-end="url(#arrow)"></path>';
+    }
+    svg += '<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ai)"></path></marker>' +
+      '<marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--dober)"></path></marker></defs>';
+    // Central recording system
+    svg += '<rect class="hub" x="360" y="225" width="170" height="90" rx="8"></rect>';
+    svg += '<text class="hub-label" x="445" y="263" text-anchor="middle">Central recording</text><text class="hub-label" x="445" y="287" text-anchor="middle">system</text>';
+    svg += '<path class="flow" d="M530 270 L 580 270" marker-end="url(#arrow)"></path>';
+    // Brain
+    svg += '<g transform="translate(585 170)">' +
+      '<path class="brain" d="M70 95 C 30 95, 20 60, 45 40 C 40 15, 75 5, 95 20 C 110 0, 150 5, 155 30 C 185 30, 195 70, 170 85 C 185 110, 160 140, 135 130 C 125 160, 85 160, 75 135 C 45 145, 25 115, 70 95 Z"></path>' +
+      '<path class="gyri" d="M60 60 C 75 50, 85 65, 100 55 M80 95 C 95 80, 110 100, 125 85 M105 35 C 120 45, 130 30, 145 45 M95 120 C 110 110, 120 125, 140 110 M55 110 C 65 100, 75 115, 85 105"></path>' +
+      '</g>';
+    svg += '<text class="brain-label" x="690" y="345" text-anchor="middle">Dober Brain</text>';
+    svg += '<text class="node-sub" x="690" y="365" text-anchor="middle">everything the company learns, in one place</text>';
+    // Still to build
+    var todos = [['Contextualize', 'tag, classify, summarize'], ['Connect', 'link customers and products'], ['Act', 'agents that answer and act']];
+    for (var j = 0; j < todos.length; j++) {
+      var ty = 100 + j * 110;
+      svg += '<path class="flow-todo" d="M790 ' + (245 + j * 15) + ' C 820 ' + (245 + j * 15) + ', 815 ' + (ty + 28) + ', 836 ' + (ty + 28) + '" marker-end="url(#arrow2)"></path>';
+      svg += '<rect class="todo-node" x="838" y="' + ty + '" width="156" height="56" rx="6"></rect>';
+      svg += '<text class="todo-label" x="850" y="' + (ty + 24) + '">' + todos[j][0] + '</text>';
+      svg += '<text class="node-sub" x="850" y="' + (ty + 42) + '">' + todos[j][1] + '</text>';
+    }
+    svg += '<text class="node-sub" x="838" y="470">Dashed = not built yet</text>';
+    svg += '</svg>';
+    return '<section class="interlude" id="brain" aria-label="Dober Brain">' +
+      '<div class="eyebrow">What comes next</div>' +
+      '<h2>The Dober Brain</h2>' +
+      '<p class="lede">Every enterprise and company update gets recorded into one central system that feeds the Dober Brain. That part is the plan. The part still to figure out is how to contextualize all that data and connect it so agents can reason across the whole company.</p>' +
+      '<div class="brain-wrap">' + svg + '</div>' +
+      '<div class="brain-cols">' +
+      '<div class="done"><h3>Record everything</h3><p>Orders, sales calls, formulation records, meeting transcripts, email, plant and quality data flow into a central recording system. Nothing the company learns gets lost in an inbox.</p></div>' +
+      '<div class="todo"><h3>Contextualize it</h3><p>Still to build. Incoming records need to be tagged, classified and summarized so a note from a plant visit and a lab result about the same product end up next to each other.</p></div>' +
+      '<div class="todo"><h3>Connect it</h3><p>Still to build. Link customers, products, people and decisions across sources so an agent can answer "what do we know about this account" from everything, not from one system.</p></div>' +
+      '</div></section>';
+  }
+  drawChart();
+})();
+</script>
+</body>
+</html>
