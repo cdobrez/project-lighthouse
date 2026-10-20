@@ -158,6 +158,20 @@
   details.table th:first-child, details.table td:first-child { text-align: left; font-family: var(--mono); font-size: 12px; }
   .table-scroll { overflow-x: auto; }
 
+
+  /* ROI mini chart */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 18px; }
+  .tile { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; min-width: 0; }
+  .tile .k { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .tile .v { font-family: var(--display); font-size: 30px; font-weight: 700; line-height: 1.1; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .tile.net { background: var(--dober-soft); border-color: transparent; }
+  .tile.net .v { color: var(--dober-ink); }
+  .chart-wrap .series-cost { stroke: var(--series-openai); }
+  .chart-wrap .series-save { stroke: var(--series-anthropic); }
+  .chart-wrap .gap { fill: var(--shade); }
+  .legend .cost i { background: var(--series-openai); }
+  .legend .save i { background: var(--series-anthropic); }
+
   /* Dober Brain */
   .brain-wrap { margin-top: 18px; overflow-x: auto; }
   .brain-wrap svg { width: 100%; min-width: 640px; height: auto; display: block; font-family: var(--body); }
@@ -284,6 +298,8 @@
     { d: '2025-01', side: 'ai', milestone: true, title: 'DeepSeek shock, Operator, Stargate', body: 'DeepSeek R1 matches frontier reasoning at a fraction of the training cost. Nvidia loses about $600B in one day. OpenAI ships Operator, a browser agent, and announces the $500B Stargate build-out.' },
     { d: '2025-02', side: 'ai', milestone: true, title: 'Claude Code arrives', body: 'Anthropic releases Claude Code (February 24) with Claude 3.7 Sonnet: an agent that lives in the terminal, reads the whole codebase and does the work. OpenAI ships Deep Research. Agentic coding becomes the entry point for enterprise AI.', tag: 'Inflection' },
     { d: '2025-02', side: 'dober', milestone: true, title: 'Spindle moves from Cursor to Claude Code', body: 'Spindle engineers pick up Claude Code as soon as it ships and start handing whole tasks to an agent instead of autocompleting lines. This is the moment coding at Dober became agentic.', tag: 'Engineering', placeholder: true, ph: 'Add first projects shipped with Claude Code and any throughput numbers.' },
+    { d: '2025-02', side: 'dober', milestone: true, title: 'CoCounsel: legal AI joins the team', body: 'Dober plugs in CoCounsel, the legal AI assistant, at the start of 2025. It costs about $1,500 a month and saves about $10,000 a month in outside legal spend and attorney hours. Pays for itself in the first week of every month. The cost and savings since then are charted below.', tag: 'ROI' },
+    { d: '2025-02', type: 'roi' },
     { d: '2025-03', side: 'ai', title: 'Images go mainstream, again', body: 'GPT-4o native image generation adds a million users in an hour (the Studio Ghibli wave). Gemini 2.5 Pro leads benchmarks. Manus demos a general-purpose agent.' },
     { d: '2025-05', side: 'ai', milestone: true, title: 'Claude 4, Veo 3 and the coding-agent land grab', body: 'Claude Opus 4 and Sonnet 4 ship with Claude Code generally available. Google Veo 3 generates video with synchronized sound. OpenAI launches Codex. Cursor passes $500M in annual revenue at a $9.9B valuation.' },
     { d: '2025-07', side: 'ai', title: 'Agents in the chat window', body: 'ChatGPT Agent browses, fills forms and builds spreadsheets on its own. Grok 4 and the open-weight Kimi K2 arrive.' },
@@ -310,6 +326,7 @@
     { d: '2026-10', type: 'brain' }
   ];
 
+  var ROI_START = '2025-02', ROI_END = '2026-10', ROI_COST = 1500, ROI_SAVE = 10000;
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   function fmt(d) { var p = d.split('-'); return MONTHS[+p[1] - 1] + ' ' + p[0]; }
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -337,6 +354,7 @@
     if (y !== year) { year = y; out.push('<div class="year" id="y' + y + '"><span>' + y + '</span></div>'); }
     if (e.type === 'chart') { out.push(chartInterlude()); i++; continue; }
     if (e.type === 'brain') { out.push(brainInterlude()); i++; continue; }
+    if (e.type === 'roi') { out.push(roiInterlude()); i++; continue; }
     var left = null, right = null;
     if (e.side === 'ai') left = e; else right = e;
     var n = EVENTS[i + 1];
@@ -462,6 +480,94 @@
     document.getElementById('chart-table').innerHTML = t;
   }
 
+
+  // ---------- CoCounsel cost vs savings ----------
+  function roiInterlude() {
+    var months = mIndex(ROI_END) - mIndex(ROI_START) + 1;
+    var cost = months * ROI_COST, save = months * ROI_SAVE, net = save - cost;
+    return '<section class="interlude" id="cocounsel" aria-label="CoCounsel cost and savings">' +
+      '<div class="eyebrow">Dober &middot; CoCounsel &middot; ' + fmt(ROI_START) + ' to ' + fmt(ROI_END) + '</div>' +
+      '<h2>One tool, ' + months + ' months, $' + net.toLocaleString() + ' net</h2>' +
+      '<p class="lede">CoCounsel costs $' + ROI_COST.toLocaleString() + ' a month and saves about $' + ROI_SAVE.toLocaleString() + ' a month in legal spend. Here is what that adds up to from the month we switched it on through today.</p>' +
+      '<div class="tiles">' +
+      '<div class="tile"><div class="k">Monthly cost</div><div class="v">$' + ROI_COST.toLocaleString() + '</div></div>' +
+      '<div class="tile"><div class="k">Monthly savings</div><div class="v">$' + ROI_SAVE.toLocaleString() + '</div></div>' +
+      '<div class="tile"><div class="k">Total cost</div><div class="v">$' + cost.toLocaleString() + '</div></div>' +
+      '<div class="tile"><div class="k">Total savings</div><div class="v">$' + save.toLocaleString() + '</div></div>' +
+      '<div class="tile net"><div class="k">Net savings to date</div><div class="v">$' + net.toLocaleString() + '</div></div>' +
+      '<div class="tile net"><div class="k">Return on cost</div><div class="v">' + (save / cost).toFixed(1) + 'x</div></div>' +
+      '</div>' +
+      '<div class="chart-head"><div class="legend"><span class="save"><i></i> Cumulative savings</span><span class="cost"><i></i> Cumulative cost</span><span><i style="width:18px;height:10px;background:var(--shade)"></i> Net savings</span></div></div>' +
+      '<div class="chart-wrap" id="roi-chart"></div>' +
+      '<p class="note">Figures as reported by Dober: about $10,000 a month saved against a $' + ROI_COST.toLocaleString() + ' monthly subscription, counted from ' + fmt(ROI_START) + ' through ' + fmt(ROI_END) + ' inclusive. Hover or tap the chart for any month.</p>' +
+      '</section>';
+  }
+
+  function drawRoi() {
+    var host = document.getElementById('roi-chart');
+    if (!host) return;
+    var a = mIndex(ROI_START), b = mIndex(ROI_END), n = b - a;
+    var cost = [], save = [];
+    for (var i = 0; i <= n; i++) { cost.push((i + 1) * ROI_COST); save.push((i + 1) * ROI_SAVE); }
+    var W = 1000, H = 340, L = 60, R = 170, T = 22, B = 40;
+    var pw = W - L - R, ph = H - T - B;
+    var yMax = Math.ceil(save[n] / 50000) * 50000;
+    function x(i) { return L + (i / n) * pw; }
+    function y(v) { return T + ph - (v / yMax) * ph; }
+    function k(v) { return '$' + (v >= 1000 ? Math.round(v / 1000) + 'K' : v); }
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Cumulative CoCounsel savings versus cost, February 2025 to October 2026">';
+    // Net-savings band between the lines
+    var d = '';
+    for (i = 0; i <= n; i++) d += (i ? ' L' : 'M') + x(i).toFixed(1) + ' ' + y(save[i]).toFixed(1);
+    for (i = n; i >= 0; i--) d += ' L' + x(i).toFixed(1) + ' ' + y(cost[i]).toFixed(1);
+    s += '<path class="gap" d="' + d + ' Z"></path>';
+    s += '<g class="grid">';
+    for (var g = 0; g <= yMax; g += 50000) s += '<line x1="' + L + '" x2="' + (L + pw) + '" y1="' + y(g) + '" y2="' + y(g) + '"></line>';
+    s += '</g><g class="axis">';
+    for (g = 0; g <= yMax; g += 50000) s += '<text x="' + (L - 8) + '" y="' + (y(g) + 4) + '" text-anchor="end">' + k(g) + '</text>';
+    for (i = 0; i <= n; i += 3) { var mi = a + i; s += '<line x1="' + x(i) + '" x2="' + x(i) + '" y1="' + (T + ph) + '" y2="' + (T + ph + 5) + '"></line><text x="' + x(i) + '" y="' + (T + ph + 20) + '" text-anchor="middle">' + MONTHS[mi % 12] + ' ' + String(2022 + Math.floor(mi / 12)).slice(2) + '</text>'; }
+    s += '</g>';
+    function path(arr) { var p = ''; for (var i = 0; i <= n; i++) p += (i ? ' L' : 'M') + x(i).toFixed(1) + ' ' + y(arr[i]).toFixed(1); return p; }
+    s += '<path class="series-save" d="' + path(save) + '" fill="none" stroke-width="2.5"></path>';
+    s += '<path class="series-cost" d="' + path(cost) + '" fill="none" stroke-width="2.5"></path>';
+    s += '<circle class="dot" cx="' + x(n) + '" cy="' + y(save[n]) + '" r="5" fill="var(--series-anthropic)"></circle>';
+    s += '<circle class="dot" cx="' + x(n) + '" cy="' + y(cost[n]) + '" r="5" fill="var(--series-openai)"></circle>';
+    s += '<text class="end-label" x="' + (x(n) + 10) + '" y="' + (y(save[n]) + 4) + '">Saved $' + save[n].toLocaleString() + '</text>';
+    s += '<text class="end-label" x="' + (x(n) + 10) + '" y="' + (y(cost[n]) + 4) + '">Cost $' + cost[n].toLocaleString() + '</text>';
+    var midY = (y(save[n]) + y(cost[n])) / 2;
+    s += '<text class="end-sub" x="' + (x(n) + 10) + '" y="' + (midY + 4) + '">Net $' + (save[n] - cost[n]).toLocaleString() + '</text>';
+    s += '<g id="roi-hover" style="display:none"><line class="crosshair" y1="' + T + '" y2="' + (T + ph) + '"></line><circle class="dot" r="5" fill="var(--series-anthropic)"></circle><circle class="dot" r="5" fill="var(--series-openai)"></circle></g>';
+    s += '<rect id="roi-hit" x="' + L + '" y="' + T + '" width="' + pw + '" height="' + ph + '" fill="transparent"></rect>';
+    s += '</svg><div class="tooltip" id="roi-tip" hidden></div>';
+    host.innerHTML = s;
+    var svg = host.querySelector('svg'), hit = host.querySelector('#roi-hit'), hov = host.querySelector('#roi-hover'), tip = host.querySelector('#roi-tip');
+    var hl = hov.querySelector('line'), hc = hov.querySelectorAll('circle');
+    function show(ev) {
+      var pt = svg.createSVGPoint(); var src = ev.touches ? ev.touches[0] : ev;
+      pt.x = src.clientX; pt.y = src.clientY;
+      var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      var i = Math.round(((p.x - L) / pw) * n); i = Math.max(0, Math.min(n, i));
+      var xi = x(i);
+      hov.style.display = '';
+      hl.setAttribute('x1', xi); hl.setAttribute('x2', xi);
+      hc[0].setAttribute('cx', xi); hc[0].setAttribute('cy', y(save[i]));
+      hc[1].setAttribute('cx', xi); hc[1].setAttribute('cy', y(cost[i]));
+      var rect = host.getBoundingClientRect(), sr = svg.getBoundingClientRect();
+      var px = sr.left - rect.left + (xi / W) * sr.width;
+      var py = sr.top - rect.top + (y(save[i]) / H) * sr.height - 84;
+      tip.hidden = false;
+      tip.style.left = Math.max(90, Math.min(rect.width - 90, px)) + 'px';
+      tip.style.top = Math.max(0, py) + 'px';
+      tip.innerHTML = '<b>' + monthLabel(a + i) + ' &middot; month ' + (i + 1) + '</b>' +
+        '<div class="r"><span><i style="background:var(--series-anthropic)"></i>Saved</span><span>$' + save[i].toLocaleString() + '</span></div>' +
+        '<div class="r"><span><i style="background:var(--series-openai)"></i>Cost</span><span>$' + cost[i].toLocaleString() + '</span></div>' +
+        '<div class="r"><span>Net</span><span>$' + (save[i] - cost[i]).toLocaleString() + '</span></div>';
+    }
+    function hide() { hov.style.display = 'none'; tip.hidden = true; }
+    hit.addEventListener('mousemove', show); hit.addEventListener('mouseleave', hide);
+    hit.addEventListener('touchstart', show, { passive: true }); hit.addEventListener('touchmove', show, { passive: true }); hit.addEventListener('touchend', hide);
+  }
+
   // ---------- Dober Brain ----------
   function brainInterlude() {
     var sources = ['ERP and orders', 'CRM and sales calls', 'Lab and formulation records', 'Meeting notes and transcripts', 'Email and chat', 'Plant, quality and service data'];
@@ -512,6 +618,7 @@
       '</div></section>';
   }
   drawChart();
+  drawRoi();
 })();
 </script>
 </body>
